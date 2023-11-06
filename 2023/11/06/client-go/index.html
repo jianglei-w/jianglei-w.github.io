@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="https://fonts.lug.ustc.edu.cn/css?family=Source Han Serif:300,300italic,400,400italic,700,700italic|JetBrains Mono:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"flat"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Client-go是golang用来操作kubernetes的客户端">
+<meta property="og:type" content="article">
+<meta property="og:title" content="client-go">
+<meta property="og:url" content="http://example.com/2023/11/06/client-go/index.html">
+<meta property="og:site_name" content="JL.&#39;s Blog">
+<meta property="og:description" content="Client-go是golang用来操作kubernetes的客户端">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-11-06T09:14:41.783Z">
+<meta property="article:modified_time" content="2023-11-06T09:18:51.843Z">
+<meta property="article:author" content="JL.">
+<meta property="article:tag" content="Kubernetes">
+<meta property="article:tag" content="Client-go">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2023/11/06/client-go/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>client-go | JL.'s Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">JL.'s Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Cloud</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">4</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类<span class="badge">2</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">2</span></a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/11/06/client-go/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/64891116?s=400&u=df918c1e5933d81c650852ee3d66f426a3d4148a&v=4">
+      <meta itemprop="name" content="JL.">
+      <meta itemprop="description" content="Cloud Native">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="JL.'s Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          client-go
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2023-11-06 17:14:41 / 修改时间：17:18:51" itemprop="dateCreated datePublished" datetime="2023-11-06T17:14:41+08:00">2023-11-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Kubernetes/" itemprop="url" rel="index"><span itemprop="name">Kubernetes</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.1k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>8 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>Client-go是golang用来操作kubernetes的客户端</p>
+</blockquote>
+<span id="more"></span>
+
+<p><a target="_blank" rel="noopener" href="https://github.com/kubernetes/client-go/tree/master/examples">k8s官方文档示例</a></p>
+<h2 id="集群内外运行差异"><a href="#集群内外运行差异" class="headerlink" title="集群内外运行差异"></a>集群内外运行差异</h2><h3 id="out-of-cluster"><a href="#out-of-cluster" class="headerlink" title="out-of-cluster"></a>out-of-cluster</h3><p>此示例演示了在集群外如何使用client-go操作集群,默认读取$HOME&#x2F;.kube&#x2F;config</p>
+<blockquote>
+<p>main.go</p>
+</blockquote>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">&quot;context&quot;</span></span><br><span class="line">	<span class="string">&quot;flag&quot;</span></span><br><span class="line">	<span class="string">&quot;fmt&quot;</span></span><br><span class="line">	<span class="string">&quot;path/filepath&quot;</span></span><br><span class="line">	<span class="string">&quot;time&quot;</span></span><br><span class="line"></span><br><span class="line">	<span class="string">&quot;github.com/jianglei-w/go-learning/utils/homedir&quot;</span></span><br><span class="line">	<span class="string">&quot;k8s.io/apimachinery/pkg/api/errors&quot;</span></span><br><span class="line">	metav1 <span class="string">&quot;k8s.io/apimachinery/pkg/apis/meta/v1&quot;</span></span><br><span class="line">	<span class="string">&quot;k8s.io/client-go/kubernetes&quot;</span></span><br><span class="line">	<span class="string">&quot;k8s.io/client-go/tools/clientcmd&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">var</span> kubeconfig *<span class="type">string</span></span><br><span class="line">	<span class="comment">// get homedir</span></span><br><span class="line">	<span class="comment">// e.g. &quot;/root&quot;</span></span><br><span class="line">	<span class="keyword">if</span> home := homedir.HomeDir(); home != <span class="string">&quot;&quot;</span> &#123;</span><br><span class="line">		kubeconfig = flag.String(<span class="string">&quot;kubeconfig&quot;</span>, filepath.Join(home, <span class="string">&quot;.kube&quot;</span>, <span class="string">&quot;config&quot;</span>), <span class="string">&quot;(optional) absolute path to the kubeconfig&quot;</span>)</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">		kubeconfig = flag.String(<span class="string">&quot;kubeconfig&quot;</span>, <span class="string">&quot;&quot;</span>, <span class="string">&quot;absolute path to the kubeconfig file&quot;</span>)</span><br><span class="line">	&#125;</span><br><span class="line">	flag.Parse()</span><br><span class="line"></span><br><span class="line">	<span class="comment">// use current context in kubeconfig</span></span><br><span class="line">	config, err := clientcmd.BuildConfigFromFlags(<span class="string">&quot;&quot;</span>, *kubeconfig)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="built_in">panic</span>(err.Error())</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// create the client set</span></span><br><span class="line">	clientset, err := kubernetes.NewForConfig(config)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="built_in">panic</span>(err.Error())</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> &#123;</span><br><span class="line">		<span class="comment">// kubectl get pods -n default</span></span><br><span class="line">		pods, err := clientset.CoreV1().Pods(<span class="string">&quot;default&quot;</span>).List(context.TODO(), metav1.ListOptions&#123;&#125;)</span><br><span class="line">		<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">			<span class="built_in">panic</span>(err.Error())</span><br><span class="line">		&#125;</span><br><span class="line">		fmt.Printf(<span class="string">&quot;There are %d pods in the cluster\n&quot;</span>, <span class="built_in">len</span>(pods.Items))</span><br><span class="line"></span><br><span class="line">		namespace := <span class="string">&quot;default&quot;</span></span><br><span class="line">		pod := <span class="string">&quot;httpd-2&quot;</span></span><br><span class="line">		</span><br><span class="line">		<span class="comment">// kubectl get pods xxx -n default</span></span><br><span class="line">		_, err = clientset.CoreV1().Pods(namespace).Get(context.TODO(), pod, metav1.GetOptions&#123;&#125;)</span><br><span class="line">		<span class="keyword">if</span> errors.IsNotFound(err) &#123;</span><br><span class="line">			fmt.Printf(<span class="string">&quot;Pod %s in namespace %s not found\n&quot;</span>, pod, namespace)</span><br><span class="line">		&#125; <span class="keyword">else</span> <span class="keyword">if</span> statuError, isStatus := err.(*errors.StatusError); isStatus &#123;</span><br><span class="line">			fmt.Printf(<span class="string">&quot;Error getting pods %s in namespace %s: %v\n&quot;</span>, pod, namespace, statuError.ErrStatus.Message)</span><br><span class="line">		&#125; <span class="keyword">else</span> <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">			<span class="built_in">panic</span>(err.Error())</span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			fmt.Printf(<span class="string">&quot;Found pod %s in namespace %s&quot;</span>, pod, namespace)</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		time.Sleep(time.Second * <span class="number">10</span>)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>此示例每十秒请求所有default命名空间pod的数量，并且每10秒检测集群内是否有httpd-2的pod</p>
+</blockquote>
+<h3 id="in-cluster"><a href="#in-cluster" class="headerlink" title="in-cluster"></a>in-cluster</h3><p>此示例向您展示如何使用 client-go 配置客户端，以从 Kubernetes 集群内运行的应用程序向 Kubernetes API 进行身份验证。</p>
+<p>当使用 <code>rest.InClusterConfig()</code> 时，client-go 使用安装在 Pod 内 <code>/var/run/secrets/kubernetes.io/serviceaccount</code> 路径的<code>serviceaccount</code>。</p>
+<blockquote>
+<p>main.go</p>
+</blockquote>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">&quot;context&quot;</span></span><br><span class="line">	<span class="string">&quot;fmt&quot;</span></span><br><span class="line">	<span class="string">&quot;time&quot;</span></span><br><span class="line"></span><br><span class="line">	<span class="string">&quot;k8s.io/apimachinery/pkg/api/errors&quot;</span></span><br><span class="line">	metav1 <span class="string">&quot;k8s.io/apimachinery/pkg/apis/meta/v1&quot;</span></span><br><span class="line">	<span class="string">&quot;k8s.io/client-go/kubernetes&quot;</span></span><br><span class="line">	<span class="string">&quot;k8s.io/client-go/rest&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	config, err := rest.InClusterConfig()</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="built_in">panic</span>(err.Error())</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	clientset, err := kubernetes.NewForConfig(config)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="built_in">panic</span>(err.Error())</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> &#123;</span><br><span class="line">		pods, err := clientset.CoreV1().Pods(<span class="string">&quot;&quot;</span>).List(context.TODO(), metav1.ListOptions&#123;&#125;)</span><br><span class="line">		<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">			<span class="built_in">panic</span>(err.Error())</span><br><span class="line">		&#125;</span><br><span class="line">		fmt.Printf(<span class="string">&quot;有 %d 个pod在default命名空间&quot;</span>, <span class="built_in">len</span>(pods.Items))</span><br><span class="line"></span><br><span class="line">		_, err = clientset.CoreV1().Pods(<span class="string">&quot;default&quot;</span>).Get(context.TODO(), <span class="string">&quot;example-xxxxx&quot;</span>, metav1.GetOptions&#123;&#125;)</span><br><span class="line">		<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">			<span class="built_in">panic</span>(err.Error())</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">if</span> errors.IsNotFound(err) &#123;</span><br><span class="line">			fmt.Printf(<span class="string">&quot;Pod example-xxxxx not found in default namespace\n&quot;</span>)</span><br><span class="line">		&#125; <span class="keyword">else</span> <span class="keyword">if</span> statusError, isStatus := err.(*errors.StatusError); isStatus &#123;</span><br><span class="line">			fmt.Printf(<span class="string">&quot;Error getting pod %v\n&quot;</span>, statusError.ErrStatus.Message)</span><br><span class="line">		&#125; <span class="keyword">else</span> <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">			<span class="built_in">panic</span>(err.Error())</span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			fmt.Printf(<span class="string">&quot;Found example-xxxxx pod in default namespace\n&quot;</span>)</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		time.Sleep(time.Second * <span class="number">10</span>)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>Dockerfile</p>
+</blockquote>
+<figure class="highlight dockerfile"><table><tr><td class="code"><pre><span class="line"><span class="keyword">FROM</span> debian</span><br><span class="line"><span class="keyword">COPY</span><span class="language-bash"> ./app /app</span></span><br><span class="line"><span class="keyword">ENTRYPOINT</span><span class="language-bash"> /app</span></span><br></pre></td></tr></table></figure>
+
+<p>首先编译适用于 Linux 的应用程序：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">GOOS=linux go build -o ./app .</span><br></pre></td></tr></table></figure>
+
+<p>如果您正在运行 Minikube 集群，则可以直接在 Minikube 节点的 Docker 引擎上构建此映像，而无需将其推送到docker hub。要在 Minikube 上构建镜像：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">eval $(minikube docker-env)</span><br><span class="line">docker build -t in-cluster:v1 .</span><br></pre></td></tr></table></figure>
+
+<p>如果您在集群上启用了 RBAC，请使用以下代码片段创建角色绑定，该绑定将授予默认服务帐户查看权限。不然Pod没有list get pod权限</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">kubectl create clusterrolebinding default-view --clusterrole=view --serviceaccount=default:default</span><br></pre></td></tr></table></figure>
+
+<p>然后，使用在 Pod 中运行该映像：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">kubectl run -i --<span class="built_in">rm</span>  demo --image=in-cluster:v1 --image-pull-policy=IfNotPresent</span></span><br><span class="line">There are 8 pods in the cluster</span><br><span class="line">Pod example-xxxxx not found in default namespace</span><br><span class="line">There are 8 pods in the cluster</span><br><span class="line">Pod example-xxxxx not found in default namespace</span><br></pre></td></tr></table></figure>
+
+<p>要停止此示例并清理 pod，使用Ctrl + C ，然后运行：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">kubectl delete deployment demo</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="k8s-Deployment-CURD"><a href="#k8s-Deployment-CURD" class="headerlink" title="k8s-Deployment-CURD"></a>k8s-Deployment-CURD</h2><blockquote>
+<p>main.go</p>
+</blockquote>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">&quot;bufio&quot;</span></span><br><span class="line">	<span class="string">&quot;context&quot;</span></span><br><span class="line">	<span class="string">&quot;flag&quot;</span></span><br><span class="line">	<span class="string">&quot;fmt&quot;</span></span><br><span class="line">	<span class="string">&quot;os&quot;</span></span><br><span class="line">	<span class="string">&quot;path/filepath&quot;</span></span><br><span class="line"></span><br><span class="line">	<span class="string">&quot;github.com/jianglei-w/go-learning/utils/homedir&quot;</span></span><br><span class="line">	appsv1 <span class="string">&quot;k8s.io/api/apps/v1&quot;</span></span><br><span class="line">	apiv1 <span class="string">&quot;k8s.io/api/core/v1&quot;</span></span><br><span class="line">	metav1 <span class="string">&quot;k8s.io/apimachinery/pkg/apis/meta/v1&quot;</span></span><br><span class="line">	<span class="string">&quot;k8s.io/client-go/kubernetes&quot;</span></span><br><span class="line">	<span class="string">&quot;k8s.io/client-go/tools/clientcmd&quot;</span></span><br><span class="line">	<span class="string">&quot;k8s.io/client-go/util/retry&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">var</span> kubeconfig *<span class="type">string</span></span><br><span class="line">	<span class="keyword">if</span> home := homedir.HomeDir(); home != <span class="string">&quot;&quot;</span> &#123;</span><br><span class="line">		kubeconfig = flag.String(<span class="string">&quot;kubeconfig&quot;</span>, filepath.Join(home, <span class="string">&quot;.kube&quot;</span>, <span class="string">&quot;config&quot;</span>), <span class="string">&quot;(optional) absolute path to the kubeconfig file&quot;</span>)</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">		kubeconfig = flag.String(<span class="string">&quot;kubeconfig&quot;</span>, <span class="string">&quot;&quot;</span>, <span class="string">&quot;absolute path to the kubeconfig file&quot;</span>)</span><br><span class="line">	&#125;</span><br><span class="line">	flag.Parse()</span><br><span class="line"></span><br><span class="line">	config, err := clientcmd.BuildConfigFromFlags(<span class="string">&quot;&quot;</span>, *kubeconfig)</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="built_in">panic</span>(err)</span><br><span class="line">	&#125;</span><br><span class="line">	clientset, err := kubernetes.NewForConfig(config)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="built_in">panic</span>(err)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	deploymentsClient := clientset.AppsV1().Deployments(apiv1.NamespaceDefault)</span><br><span class="line">	<span class="comment">// 构造deployment对象</span></span><br><span class="line">	deployment := &amp;appsv1.Deployment&#123;</span><br><span class="line">		ObjectMeta: metav1.ObjectMeta&#123;</span><br><span class="line">			Name: <span class="string">&quot;demo-deployment&quot;</span>,</span><br><span class="line">		&#125;,</span><br><span class="line">		Spec: appsv1.DeploymentSpec&#123;</span><br><span class="line">			Replicas: int32Ptr(<span class="number">2</span>),</span><br><span class="line">			Selector: &amp;metav1.LabelSelector&#123;</span><br><span class="line">				MatchLabels: <span class="keyword">map</span>[<span class="type">string</span>]<span class="type">string</span>&#123;</span><br><span class="line">					<span class="string">&quot;app&quot;</span>: <span class="string">&quot;demo&quot;</span>,</span><br><span class="line">				&#125;,</span><br><span class="line">			&#125;,</span><br><span class="line">			Template: apiv1.PodTemplateSpec&#123;</span><br><span class="line">				ObjectMeta: metav1.ObjectMeta&#123;</span><br><span class="line">					Labels: <span class="keyword">map</span>[<span class="type">string</span>]<span class="type">string</span>&#123;</span><br><span class="line">						<span class="string">&quot;app&quot;</span>: <span class="string">&quot;demo&quot;</span>,</span><br><span class="line">					&#125;,</span><br><span class="line">				&#125;,</span><br><span class="line">				Spec: apiv1.PodSpec&#123;</span><br><span class="line">					Containers: []apiv1.Container&#123;</span><br><span class="line">						&#123;</span><br><span class="line">							Name:  <span class="string">&quot;web&quot;</span>,</span><br><span class="line">							Image: <span class="string">&quot;nginx:1.12&quot;</span>,</span><br><span class="line">							Ports: []apiv1.ContainerPort&#123;</span><br><span class="line">								&#123;</span><br><span class="line">									Name:          <span class="string">&quot;http&quot;</span>,</span><br><span class="line">									Protocol:      <span class="string">&quot;TCP&quot;</span>,</span><br><span class="line">									ContainerPort: <span class="number">80</span>,</span><br><span class="line">								&#125;,</span><br><span class="line">							&#125;,</span><br><span class="line">						&#125;,</span><br><span class="line">					&#125;,</span><br><span class="line">				&#125;,</span><br><span class="line">			&#125;,</span><br><span class="line">		&#125;,</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Create Deployment</span></span><br><span class="line">	fmt.Println(<span class="string">&quot;Creating deployment...&quot;</span>)</span><br><span class="line">	result, err := deploymentsClient.Create(context.TODO(), deployment, metav1.CreateOptions&#123;&#125;)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="built_in">panic</span>(err)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	fmt.Printf(<span class="string">&quot;Created deployment %q.\n&quot;</span>, result.GetObjectMeta().GetName())</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Update Deployment</span></span><br><span class="line">	prompt()</span><br><span class="line">	fmt.Println(<span class="string">&quot;Updating deployment...&quot;</span>)</span><br><span class="line"></span><br><span class="line">	retryErr := retry.RetryOnConflict(retry.DefaultRetry, <span class="function"><span class="keyword">func</span><span class="params">()</span></span> <span class="type">error</span> &#123;</span><br><span class="line"></span><br><span class="line">		result, getErr := deploymentsClient.Get(context.TODO(), <span class="string">&quot;demo-deployment&quot;</span>, metav1.GetOptions&#123;&#125;)</span><br><span class="line">		<span class="keyword">if</span> getErr != <span class="literal">nil</span> &#123;</span><br><span class="line">			<span class="built_in">panic</span>(fmt.Errorf(<span class="string">&quot;Failed to get latest version of Deployment: %v&quot;</span>, getErr))</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		result.Spec.Replicas = int32Ptr(<span class="number">1</span>)</span><br><span class="line">		result.Spec.Template.Spec.Containers[<span class="number">0</span>].Image = <span class="string">&quot;nginx:1.13&quot;</span></span><br><span class="line">		_, updateErr := deploymentsClient.Update(context.TODO(), result, metav1.UpdateOptions&#123;&#125;)</span><br><span class="line">		<span class="keyword">return</span> updateErr</span><br><span class="line">	&#125;)</span><br><span class="line">	<span class="keyword">if</span> retryErr != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="built_in">panic</span>(fmt.Errorf(<span class="string">&quot;Update failed: %v&quot;</span>, retryErr))</span><br><span class="line">	&#125;</span><br><span class="line">	fmt.Println(<span class="string">&quot;Updated deployment...&quot;</span>)</span><br><span class="line">	<span class="comment">// List Deployments</span></span><br><span class="line">	prompt()</span><br><span class="line">	fmt.Printf(<span class="string">&quot;Listing deployments in namespace %q:\n&quot;</span>, apiv1.NamespaceDefault)</span><br><span class="line">	list, err := deploymentsClient.List(context.TODO(), metav1.ListOptions&#123;&#125;)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="built_in">panic</span>(err)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> _, d := <span class="keyword">range</span> list.Items &#123;</span><br><span class="line">		fmt.Printf(<span class="string">&quot; * %s (%d replicas)\n&quot;</span>, d.Name, *d.Spec.Replicas)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	prompt()</span><br><span class="line">	fmt.Println(<span class="string">&quot;Deleting deployment...&quot;</span>)</span><br><span class="line">	deletePolicy := metav1.DeletePropagationForeground</span><br><span class="line">	<span class="keyword">if</span> err := deploymentsClient.Delete(context.TODO(), <span class="string">&quot;demo-deployment&quot;</span>, metav1.DeleteOptions&#123;</span><br><span class="line">		PropagationPolicy: &amp;deletePolicy,</span><br><span class="line">	&#125;); err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="built_in">panic</span>(err)</span><br><span class="line">	&#125;</span><br><span class="line">	fmt.Println(<span class="string">&quot;Deleted deployment.&quot;</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">prompt</span><span class="params">()</span></span> &#123;</span><br><span class="line">	fmt.Printf(<span class="string">&quot;-&gt; Press Return key to continue.&quot;</span>)</span><br><span class="line">	scanner := bufio.NewScanner(os.Stdin)</span><br><span class="line">	<span class="keyword">for</span> scanner.Scan() &#123;</span><br><span class="line">		<span class="keyword">break</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> err := scanner.Err(); err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="built_in">panic</span>(err)</span><br><span class="line">	&#125;</span><br><span class="line">	fmt.Println()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">int32Ptr</span><span class="params">(i <span class="type">int32</span>)</span></span> *<span class="type">int32</span> &#123; <span class="keyword">return</span> &amp;i &#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>编译运行</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">go build -o ./app</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">./app</span> </span><br><span class="line">Creating deployment...</span><br><span class="line">Created deployment &quot;demo-deployment&quot;.</span><br><span class="line"><span class="meta prompt_">-&gt; </span><span class="language-bash">Press Return key to <span class="built_in">continue</span>.</span></span><br><span class="line"></span><br><span class="line">Updating deployment...</span><br><span class="line">Updated deployment...</span><br><span class="line"><span class="meta prompt_">-&gt; </span><span class="language-bash">Press Return key to <span class="built_in">continue</span>.</span></span><br><span class="line"></span><br><span class="line">Listing deployments in namespace &quot;default&quot;:</span><br><span class="line"> * demo-deployment (1 replicas)</span><br><span class="line"><span class="meta prompt_">-&gt; </span><span class="language-bash">Press Return key to <span class="built_in">continue</span>.</span></span><br><span class="line"></span><br><span class="line">Deleting deployment...</span><br><span class="line">Deleted deployment.</span><br></pre></td></tr></table></figure>
+
+<h3 id="使用Dynamic包的CURD"><a href="#使用Dynamic包的CURD" class="headerlink" title="使用Dynamic包的CURD"></a>使用Dynamic包的CURD</h3><p><code>dynamic</code> 包使用简单类型 <code>unstructured.Unstructured</code> 来表示来自 API 服务器的所有对象值。类型 <code>Unstructured</code> 使用嵌套 <code>map[string]interface&#123;&#125;</code> 值的集合来创建与服务器中的 REST 负载非常相似的内部结构。</p>
+<blockquote>
+<p>main.go</p>
+</blockquote>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">&quot;bufio&quot;</span></span><br><span class="line">	<span class="string">&quot;context&quot;</span></span><br><span class="line">	<span class="string">&quot;flag&quot;</span></span><br><span class="line">	<span class="string">&quot;fmt&quot;</span></span><br><span class="line">	<span class="string">&quot;os&quot;</span></span><br><span class="line">	<span class="string">&quot;path/filepath&quot;</span></span><br><span class="line"></span><br><span class="line">	<span class="string">&quot;github.com/jianglei-w/go-learning/utils/homedir&quot;</span></span><br><span class="line">	apiv1 <span class="string">&quot;k8s.io/api/core/v1&quot;</span></span><br><span class="line">	metav1 <span class="string">&quot;k8s.io/apimachinery/pkg/apis/meta/v1&quot;</span></span><br><span class="line">	<span class="string">&quot;k8s.io/apimachinery/pkg/apis/meta/v1/unstructured&quot;</span></span><br><span class="line">	<span class="string">&quot;k8s.io/apimachinery/pkg/runtime/schema&quot;</span></span><br><span class="line">	<span class="string">&quot;k8s.io/client-go/dynamic&quot;</span></span><br><span class="line">	<span class="string">&quot;k8s.io/client-go/tools/clientcmd&quot;</span></span><br><span class="line">	<span class="string">&quot;k8s.io/client-go/util/retry&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">var</span> kubeconfig *<span class="type">string</span></span><br><span class="line">	<span class="keyword">if</span> home := homedir.HomeDir(); home != <span class="string">&quot;&quot;</span> &#123;</span><br><span class="line">		kubeconfig = flag.String(<span class="string">&quot;kubeconfig&quot;</span>, filepath.Join(home, <span class="string">&quot;.kube&quot;</span>, <span class="string">&quot;config&quot;</span>), <span class="string">&quot;(optional) absolute path to the kubeconfig file&quot;</span>)</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">		kubeconfig = flag.String(<span class="string">&quot;kubeconfig&quot;</span>, <span class="string">&quot;&quot;</span>, <span class="string">&quot;absolute path to the kubeconfig file&quot;</span>)</span><br><span class="line">	&#125;</span><br><span class="line">	flag.Parse()</span><br><span class="line"></span><br><span class="line">	config, err := clientcmd.BuildConfigFromFlags(<span class="string">&quot;&quot;</span>, *kubeconfig)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="built_in">panic</span>(err)</span><br><span class="line">	&#125;</span><br><span class="line">	client, err := dynamic.NewForConfig(config)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="built_in">panic</span>(err)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	gvr := schema.GroupVersionResource&#123;Group: <span class="string">&quot;apps&quot;</span>, Version: <span class="string">&quot;v1&quot;</span>, Resource: <span class="string">&quot;deployments&quot;</span>&#125;</span><br><span class="line"></span><br><span class="line">	deployment := &amp;unstructured.Unstructured&#123;</span><br><span class="line">		Object: <span class="keyword">map</span>[<span class="type">string</span>]<span class="keyword">interface</span>&#123;&#125;&#123;</span><br><span class="line">			<span class="string">&quot;apiVersion&quot;</span>: <span class="string">&quot;apps/v1&quot;</span>,</span><br><span class="line">			<span class="string">&quot;kind&quot;</span>:       <span class="string">&quot;Deployment&quot;</span>,</span><br><span class="line">			<span class="string">&quot;metadata&quot;</span>: <span class="keyword">map</span>[<span class="type">string</span>]<span class="keyword">interface</span>&#123;&#125;&#123;</span><br><span class="line">				<span class="string">&quot;name&quot;</span>: <span class="string">&quot;demo-deployment&quot;</span>,</span><br><span class="line">			&#125;,</span><br><span class="line">			<span class="string">&quot;spec&quot;</span>: <span class="keyword">map</span>[<span class="type">string</span>]<span class="keyword">interface</span>&#123;&#125;&#123;</span><br><span class="line">				<span class="string">&quot;replicas&quot;</span>: <span class="number">2</span>,</span><br><span class="line">				<span class="string">&quot;selector&quot;</span>: <span class="keyword">map</span>[<span class="type">string</span>]<span class="keyword">interface</span>&#123;&#125;&#123;</span><br><span class="line">					<span class="string">&quot;matchLabels&quot;</span>: <span class="keyword">map</span>[<span class="type">string</span>]<span class="keyword">interface</span>&#123;&#125;&#123;</span><br><span class="line">						<span class="string">&quot;app&quot;</span>: <span class="string">&quot;demo&quot;</span>,</span><br><span class="line">					&#125;,</span><br><span class="line">				&#125;,</span><br><span class="line">				<span class="string">&quot;template&quot;</span>: <span class="keyword">map</span>[<span class="type">string</span>]<span class="keyword">interface</span>&#123;&#125;&#123;</span><br><span class="line">					<span class="string">&quot;metadata&quot;</span>: <span class="keyword">map</span>[<span class="type">string</span>]<span class="keyword">interface</span>&#123;&#125;&#123;</span><br><span class="line">						<span class="string">&quot;labels&quot;</span>: <span class="keyword">map</span>[<span class="type">string</span>]<span class="keyword">interface</span>&#123;&#125;&#123;</span><br><span class="line">							<span class="string">&quot;app&quot;</span>: <span class="string">&quot;demo&quot;</span>,</span><br><span class="line">						&#125;,</span><br><span class="line">					&#125;,</span><br><span class="line">					<span class="string">&quot;spec&quot;</span>: <span class="keyword">map</span>[<span class="type">string</span>]<span class="keyword">interface</span>&#123;&#125;&#123;</span><br><span class="line">						<span class="string">&quot;containers&quot;</span>: []<span class="keyword">map</span>[<span class="type">string</span>]<span class="keyword">interface</span>&#123;&#125;&#123;</span><br><span class="line">							&#123;</span><br><span class="line">								<span class="string">&quot;name&quot;</span>:  <span class="string">&quot;web&quot;</span>,</span><br><span class="line">								<span class="string">&quot;image&quot;</span>: <span class="string">&quot;nginx:1.12&quot;</span>,</span><br><span class="line">								<span class="string">&quot;ports&quot;</span>: []<span class="keyword">map</span>[<span class="type">string</span>]<span class="keyword">interface</span>&#123;&#125;&#123;</span><br><span class="line">									&#123;</span><br><span class="line">										<span class="string">&quot;name&quot;</span>:          <span class="string">&quot;http&quot;</span>,</span><br><span class="line">										<span class="string">&quot;protocol&quot;</span>:      <span class="string">&quot;TCP&quot;</span>,</span><br><span class="line">										<span class="string">&quot;containerPort&quot;</span>: <span class="number">80</span>,</span><br><span class="line">									&#125;,</span><br><span class="line">								&#125;,</span><br><span class="line">							&#125;,</span><br><span class="line">						&#125;,</span><br><span class="line">					&#125;,</span><br><span class="line">				&#125;,</span><br><span class="line">			&#125;,</span><br><span class="line">		&#125;,</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	fmt.Println(<span class="string">&quot;Creating deployment...&quot;</span>)</span><br><span class="line">	result, err := client.Resource(gvr).Namespace(apiv1.NamespaceDefault).Create(context.TODO(), deployment, metav1.CreateOptions&#123;&#125;)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="built_in">panic</span>(err)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="built_in">panic</span>(err)</span><br><span class="line">	&#125;</span><br><span class="line">	fmt.Printf(<span class="string">&quot;Created deployment %q.\n&quot;</span>, result.GetName())</span><br><span class="line">	prompt()</span><br><span class="line">	fmt.Println(<span class="string">&quot;Updating deployment...&quot;</span>)</span><br><span class="line">	retryErr := retry.RetryOnConflict(retry.DefaultRetry, <span class="function"><span class="keyword">func</span><span class="params">()</span></span> <span class="type">error</span> &#123;</span><br><span class="line">		<span class="comment">// Retrieve the latest version of Deployment before attempting update</span></span><br><span class="line">		<span class="comment">// RetryOnConflict uses exponential backoff to avoid exhausting the apiserver</span></span><br><span class="line">		result, getErr := client.Resource(gvr).Namespace(apiv1.NamespaceDefault).Get(context.TODO(), <span class="string">&quot;demo-deployment&quot;</span>, metav1.GetOptions&#123;&#125;)</span><br><span class="line">		<span class="keyword">if</span> getErr != <span class="literal">nil</span> &#123;</span><br><span class="line">			<span class="built_in">panic</span>(fmt.Errorf(<span class="string">&quot;failed to get latest version of Deployment: %v&quot;</span>, getErr))</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="comment">// update replicas to 1</span></span><br><span class="line">		<span class="keyword">if</span> err := unstructured.SetNestedField(result.Object, <span class="type">int64</span>(<span class="number">1</span>), <span class="string">&quot;spec&quot;</span>, <span class="string">&quot;replicas&quot;</span>); err != <span class="literal">nil</span> &#123;</span><br><span class="line">			<span class="built_in">panic</span>(fmt.Errorf(<span class="string">&quot;failed to set replica value: %v&quot;</span>, err))</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="comment">// extract spec containers</span></span><br><span class="line">		containers, found, err := unstructured.NestedSlice(result.Object, <span class="string">&quot;spec&quot;</span>, <span class="string">&quot;template&quot;</span>, <span class="string">&quot;spec&quot;</span>, <span class="string">&quot;containers&quot;</span>)</span><br><span class="line">		<span class="keyword">if</span> err != <span class="literal">nil</span> || !found || containers == <span class="literal">nil</span> &#123;</span><br><span class="line">			<span class="built_in">panic</span>(fmt.Errorf(<span class="string">&quot;deployment containers not found or error in spec: %v&quot;</span>, err))</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="comment">// update container[0] image</span></span><br><span class="line">		<span class="keyword">if</span> err := unstructured.SetNestedField(containers[<span class="number">0</span>].(<span class="keyword">map</span>[<span class="type">string</span>]<span class="keyword">interface</span>&#123;&#125;), <span class="string">&quot;nginx:1.13&quot;</span>, <span class="string">&quot;image&quot;</span>); err != <span class="literal">nil</span> &#123;</span><br><span class="line">			<span class="built_in">panic</span>(err)</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">if</span> err := unstructured.SetNestedField(result.Object, containers, <span class="string">&quot;spec&quot;</span>, <span class="string">&quot;template&quot;</span>, <span class="string">&quot;spec&quot;</span>, <span class="string">&quot;containers&quot;</span>); err != <span class="literal">nil</span> &#123;</span><br><span class="line">			<span class="built_in">panic</span>(err)</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		_, updateErr := client.Resource(gvr).Namespace(apiv1.NamespaceDefault).Update(context.TODO(), result, metav1.UpdateOptions&#123;&#125;)</span><br><span class="line">		<span class="keyword">return</span> updateErr</span><br><span class="line">	&#125;)</span><br><span class="line">	<span class="keyword">if</span> retryErr != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="built_in">panic</span>(fmt.Errorf(<span class="string">&quot;update failed: %v&quot;</span>, retryErr))</span><br><span class="line">	&#125;</span><br><span class="line">	fmt.Println(<span class="string">&quot;Updated deployment...&quot;</span>)</span><br><span class="line"></span><br><span class="line">	prompt()</span><br><span class="line">	fmt.Printf(<span class="string">&quot;Listing deployments in namespace %q:\n&quot;</span>, apiv1.NamespaceDefault)</span><br><span class="line">	list, err := client.Resource(gvr).Namespace(apiv1.NamespaceDefault).List(context.TODO(), metav1.ListOptions&#123;&#125;)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="built_in">panic</span>(err)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">for</span> _, d := <span class="keyword">range</span> list.Items &#123;</span><br><span class="line">		replicas, found, err := unstructured.NestedInt64(d.Object, <span class="string">&quot;spec&quot;</span>, <span class="string">&quot;replicas&quot;</span>)</span><br><span class="line">		<span class="keyword">if</span> err != <span class="literal">nil</span> || !found &#123;</span><br><span class="line">			fmt.Printf(<span class="string">&quot;Replicas not found for deployment %s: error=%s&quot;</span>, d.GetName(), err)</span><br><span class="line">			<span class="keyword">continue</span></span><br><span class="line">		&#125;</span><br><span class="line">		fmt.Printf(<span class="string">&quot; * %s (%d replicas)\n&quot;</span>, d.GetName(), replicas)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	prompt()</span><br><span class="line">	fmt.Println(<span class="string">&quot;Deleting deployment...&quot;</span>)</span><br><span class="line">	deletePolicy := metav1.DeletePropagationForeground</span><br><span class="line">	deleteOptions := metav1.DeleteOptions&#123;</span><br><span class="line">		PropagationPolicy: &amp;deletePolicy,</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> err := client.Resource(gvr).Namespace(apiv1.NamespaceDefault).Delete(context.TODO(), <span class="string">&quot;demo-deployment&quot;</span>, deleteOptions); err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="built_in">panic</span>(err)</span><br><span class="line">	&#125;</span><br><span class="line">	fmt.Println(<span class="string">&quot;Deleted deployment.&quot;</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">prompt</span><span class="params">()</span></span> &#123;</span><br><span class="line">	fmt.Printf(<span class="string">&quot;-&gt; Press Return key to continue.&quot;</span>)</span><br><span class="line">	scanner := bufio.NewScanner(os.Stdin)</span><br><span class="line">	<span class="keyword">for</span> scanner.Scan() &#123;</span><br><span class="line">		<span class="keyword">break</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> err := scanner.Err(); err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="built_in">panic</span>(err)</span><br><span class="line">	&#125;</span><br><span class="line">	fmt.Println()</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>运行输出如下</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">Creating deployment...</span><br><span class="line">Created deployment &quot;demo-deployment&quot;.</span><br><span class="line"><span class="meta prompt_">-&gt; </span><span class="language-bash">Press Return key to <span class="built_in">continue</span>.</span></span><br><span class="line"></span><br><span class="line">Updating deployment...</span><br><span class="line">Updated deployment...</span><br><span class="line"><span class="meta prompt_">-&gt; </span><span class="language-bash">Press Return key to <span class="built_in">continue</span>.</span></span><br><span class="line"></span><br><span class="line">Listing deployments in namespace &quot;default&quot;:</span><br><span class="line"> * demo-deployment (1 replicas)</span><br><span class="line"><span class="meta prompt_">-&gt; </span><span class="language-bash">Press Return key to <span class="built_in">continue</span>.</span></span><br><span class="line"></span><br><span class="line">Deleting deployment...</span><br><span class="line">Deleted deployment.</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="workerqueue"><a href="#workerqueue" class="headerlink" title="workerqueue"></a>workerqueue</h2><blockquote>
+<p>main.go</p>
+</blockquote>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">&quot;flag&quot;</span></span><br><span class="line">	<span class="string">&quot;fmt&quot;</span></span><br><span class="line">	<span class="string">&quot;time&quot;</span></span><br><span class="line"></span><br><span class="line">	v1 <span class="string">&quot;k8s.io/api/core/v1&quot;</span></span><br><span class="line">	meta_v1 <span class="string">&quot;k8s.io/apimachinery/pkg/apis/meta/v1&quot;</span></span><br><span class="line">	<span class="string">&quot;k8s.io/apimachinery/pkg/fields&quot;</span></span><br><span class="line">	<span class="string">&quot;k8s.io/apimachinery/pkg/util/runtime&quot;</span></span><br><span class="line">	<span class="string">&quot;k8s.io/apimachinery/pkg/util/wait&quot;</span></span><br><span class="line">	<span class="string">&quot;k8s.io/client-go/kubernetes&quot;</span></span><br><span class="line">	<span class="string">&quot;k8s.io/client-go/tools/cache&quot;</span></span><br><span class="line">	<span class="string">&quot;k8s.io/client-go/tools/clientcmd&quot;</span></span><br><span class="line">	<span class="string">&quot;k8s.io/client-go/util/workqueue&quot;</span></span><br><span class="line">	<span class="string">&quot;k8s.io/klog/v2&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Controller <span class="keyword">struct</span> &#123;</span><br><span class="line">	indexer  cache.Indexer</span><br><span class="line">	queue    workqueue.RateLimitingInterface</span><br><span class="line">	informer cache.Controller</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// NewController create a new controller</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewController</span><span class="params">(queue workqueue.RateLimitingInterface, informer cache.Controller, indexer cache.Indexer)</span></span> *Controller &#123;</span><br><span class="line">	<span class="keyword">return</span> &amp;Controller&#123;</span><br><span class="line">		indexer:  indexer,</span><br><span class="line">		queue:    queue,</span><br><span class="line">		informer: informer,</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(c *Controller)</span></span> processNextItem() <span class="type">bool</span> &#123;</span><br><span class="line">	key, quit := c.queue.Get()</span><br><span class="line">	<span class="keyword">if</span> quit &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">defer</span> c.queue.Done(key)</span><br><span class="line"></span><br><span class="line">	err := c.syncToStdout(key.(<span class="type">string</span>))</span><br><span class="line">	c.handleErr(err, key)</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(c *Controller)</span></span> syncToStdout(key <span class="type">string</span>) <span class="type">error</span> &#123;</span><br><span class="line">	obj, exists, err := c.indexer.GetByKey(key)</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		klog.Errorf(<span class="string">&quot;Fetching object with key %s from store failed with %v&quot;</span>, key, err)</span><br><span class="line">		<span class="keyword">return</span> err</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> !exists &#123;</span><br><span class="line">		fmt.Printf(<span class="string">&quot;Pod %s does not exist anymore\n&quot;</span>, key)</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">		fmt.Printf(<span class="string">&quot;Sync/Add/Update for Pod %s\n&quot;</span>, obj.(*v1.Pod).GetName())</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(c *Controller)</span></span> handleErr(err <span class="type">error</span>, key <span class="keyword">interface</span>&#123;&#125;) &#123;</span><br><span class="line">	<span class="keyword">if</span> err == <span class="literal">nil</span> &#123;</span><br><span class="line">		c.queue.Forget(key)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> c.queue.NumRequeues(key) &lt; <span class="number">5</span> &#123;</span><br><span class="line">		klog.Infof(<span class="string">&quot;Error syncing pod %v:%v\n&quot;</span>, key, err)</span><br><span class="line"></span><br><span class="line">		c.queue.AddRateLimited(key)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	c.queue.Forget(key)</span><br><span class="line"></span><br><span class="line">	runtime.HandleError(err)</span><br><span class="line"></span><br><span class="line">	klog.Infof(<span class="string">&quot;Dropping pod %q out of the queue: %v&quot;</span>, key, err)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(c *Controller)</span></span> Run(workers <span class="type">int</span>, stopCh <span class="keyword">chan</span> <span class="keyword">struct</span>&#123;&#125;) &#123;</span><br><span class="line">	<span class="keyword">defer</span> runtime.HandleCrash()</span><br><span class="line"></span><br><span class="line">	<span class="keyword">defer</span> c.queue.ShutDown()</span><br><span class="line"></span><br><span class="line">	klog.Info(<span class="string">&quot;Starting Pod controller&quot;</span>)</span><br><span class="line"></span><br><span class="line">	<span class="keyword">go</span> c.informer.Run(stopCh)</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> !cache.WaitForCacheSync(stopCh, c.informer.HasSynced) &#123;</span><br><span class="line">		runtime.HandleError(fmt.Errorf(<span class="string">&quot;Timed out waiting for caches to sync&quot;</span>))</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; workers; i++ &#123;</span><br><span class="line">		<span class="keyword">go</span> wait.Until(c.runWorker, time.Second, stopCh)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	&lt;-stopCh</span><br><span class="line">	klog.Info(<span class="string">&quot;Stopping Pod Controller&quot;</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(c *Controller)</span></span> runWorker() &#123;</span><br><span class="line">	<span class="keyword">for</span> c.processNextItem() &#123;</span><br><span class="line"></span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">var</span> kubeconfig <span class="type">string</span></span><br><span class="line">	<span class="keyword">var</span> master <span class="type">string</span></span><br><span class="line"></span><br><span class="line">	flag.StringVar(&amp;kubeconfig, <span class="string">&quot;kubeconfig&quot;</span>, <span class="string">&quot;&quot;</span>, <span class="string">&quot;absolute path to the kubeconfig file&quot;</span>)</span><br><span class="line">	flag.StringVar(&amp;master, <span class="string">&quot;master&quot;</span>, <span class="string">&quot;&quot;</span>, <span class="string">&quot;master url&quot;</span>)</span><br><span class="line">	flag.Parse()</span><br><span class="line"></span><br><span class="line">	<span class="comment">// creates the connection</span></span><br><span class="line">	config, err := clientcmd.BuildConfigFromFlags(master, kubeconfig)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		klog.Fatal(err)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// creates the clientset</span></span><br><span class="line">	clientset := kubernetes.NewForConfigOrDie(config)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// create the watcher</span></span><br><span class="line">	podListWatcher := cache.NewListWatchFromClient(clientset.CoreV1().RESTClient(), <span class="string">&quot;pods&quot;</span>, <span class="string">&quot;default&quot;</span>, fields.Everything())</span><br><span class="line"></span><br><span class="line">	<span class="comment">// create the workqueue</span></span><br><span class="line">	queue := workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter())</span><br><span class="line"></span><br><span class="line">	indexer, infomer := cache.NewIndexerInformer(podListWatcher, &amp;v1.Pod&#123;&#125;, <span class="number">0</span>, cache.ResourceEventHandlerFuncs&#123;</span><br><span class="line">		AddFunc: <span class="function"><span class="keyword">func</span><span class="params">(obj <span class="keyword">interface</span>&#123;&#125;)</span></span> &#123;</span><br><span class="line">			key, err := cache.MetaNamespaceKeyFunc(obj)</span><br><span class="line">			<span class="keyword">if</span> err == <span class="literal">nil</span> &#123;</span><br><span class="line">				queue.Add(key)</span><br><span class="line">				fmt.Println(<span class="string">&quot;Add...&quot;</span>)</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;,</span><br><span class="line">		UpdateFunc: <span class="function"><span class="keyword">func</span><span class="params">(oldObj, newObj <span class="keyword">interface</span>&#123;&#125;)</span></span> &#123;</span><br><span class="line">			key, err := cache.MetaNamespaceKeyFunc(newObj)</span><br><span class="line">			<span class="keyword">if</span> err == <span class="literal">nil</span> &#123;</span><br><span class="line">				queue.Add(key)</span><br><span class="line">				fmt.Println(<span class="string">&quot;update...&quot;</span>)</span><br><span class="line"></span><br><span class="line">			&#125;</span><br><span class="line">		&#125;,</span><br><span class="line">		DeleteFunc: <span class="function"><span class="keyword">func</span><span class="params">(obj <span class="keyword">interface</span>&#123;&#125;)</span></span> &#123;</span><br><span class="line">			key, err := cache.DeletionHandlingMetaNamespaceKeyFunc(obj)</span><br><span class="line">			<span class="keyword">if</span> err == <span class="literal">nil</span> &#123;</span><br><span class="line">				queue.Add(key)</span><br><span class="line">				fmt.Println(<span class="string">&quot;Delete...&quot;</span>)</span><br><span class="line"></span><br><span class="line">			&#125;</span><br><span class="line">		&#125;,</span><br><span class="line">	&#125;, cache.Indexers&#123;&#125;)</span><br><span class="line"></span><br><span class="line">	controller := NewController(queue, infomer, indexer)</span><br><span class="line"></span><br><span class="line">	indexer.Add(&amp;v1.Pod&#123;</span><br><span class="line">		ObjectMeta: meta_v1.ObjectMeta&#123;</span><br><span class="line">			Name:      <span class="string">&quot;myPod&quot;</span>,</span><br><span class="line">			Namespace: <span class="string">&quot;default&quot;</span>,</span><br><span class="line">		&#125;,</span><br><span class="line">	&#125;)</span><br><span class="line"></span><br><span class="line">	stop := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">struct</span>&#123;&#125;)</span><br><span class="line">	<span class="keyword">defer</span> <span class="built_in">close</span>(stop)</span><br><span class="line">	<span class="keyword">go</span> controller.Run(<span class="number">1</span>, stop)</span><br><span class="line"></span><br><span class="line">	<span class="keyword">select</span> &#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Kubernetes/" rel="tag"># Kubernetes</a>
+              <a href="/tags/Client-go/" rel="tag"># Client-go</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/10/26/proxy/" rel="prev" title="局域网代理上网">
+      <i class="fa fa-chevron-left"></i> 局域网代理上网
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9B%86%E7%BE%A4%E5%86%85%E5%A4%96%E8%BF%90%E8%A1%8C%E5%B7%AE%E5%BC%82"><span class="nav-text">集群内外运行差异</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#out-of-cluster"><span class="nav-text">out-of-cluster</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#in-cluster"><span class="nav-text">in-cluster</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#k8s-Deployment-CURD"><span class="nav-text">k8s-Deployment-CURD</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8Dynamic%E5%8C%85%E7%9A%84CURD"><span class="nav-text">使用Dynamic包的CURD</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#workerqueue"><span class="nav-text">workerqueue</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="JL."
+      src="https://avatars.githubusercontent.com/u/64891116?s=400&u=df918c1e5933d81c650852ee3d66f426a3d4148a&v=4">
+  <p class="site-author-name" itemprop="name">JL.</p>
+  <div class="site-description" itemprop="description">Cloud Native</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">2</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/jianglei-w" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;jianglei-w" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:jianglei.new@gmail.com" title="E-Mail → mailto:jianglei.new@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i></a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 20 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jianglei</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">3k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">10 分钟</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
