@@ -127,17 +127,17 @@
   </li>
         <li class="menu-item menu-item-tags">
 
-    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">4</span></a>
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">8</span></a>
 
   </li>
         <li class="menu-item menu-item-categories">
 
-    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类<span class="badge">2</span></a>
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类<span class="badge">4</span></a>
 
   </li>
         <li class="menu-item menu-item-archives">
 
-    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">2</span></a>
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">4</span></a>
 
   </li>
   </ul>
@@ -241,26 +241,19 @@
 <p>安装完毕后, 在软件安装目录下找到主配置文件<code>config.txt</code></p>
 </blockquote>
 <p>在尾部添加一行</p>
-<pre><code class="highlight shell">listen-address 0.0.0.0:18088</code></pre>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">listen-address 0.0.0.0:18088</span><br></pre></td></tr></table></figure>
 
 <p>如果你不喜欢<code>18088</code>这个端口也可以改成你自己喜欢的, 如<code>666</code></p>
 <p>修改完成之后就可以双击软件启动了</p>
 <p>启动之后在<code>powershell</code>使用如下命令,可以看到已经启动成功,端口已经监听在<code>18088</code></p>
-<pre><code class="highlight shell">PS C:\Users\jiangl&gt; netstat -ano | findstr &quot;18088&quot;
-  TCP    0.0.0.0:18088          0.0.0.0:0              LISTENING       9776</code></pre>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">PS C:\Users\jiangl&gt; netstat -ano | findstr &quot;18088&quot;</span><br><span class="line">  TCP    0.0.0.0:18088          0.0.0.0:0              LISTENING       9776</span><br></pre></td></tr></table></figure>
 
 <blockquote>
 <p>此时Windows服务端已经配置成功</p>
 </blockquote>
 <h2 id="Linux客户端配置"><a href="#Linux客户端配置" class="headerlink" title="Linux客户端配置"></a>Linux客户端配置</h2><p><strong>在Linux中我们只讨论在无图形化的系统中, 如果浏览器需要上网, 需要设置各浏览器的代理</strong></p>
 <h3 id="设置http-s-代理"><a href="#设置http-s-代理" class="headerlink" title="设置http[s]代理"></a>设置http[s]代理</h3><p>使用<code>vim</code>编辑<code>/etc/profile</code>文件(没有vim可用vi)</p>
-<pre><code class="highlight shell">vim /etc/profile # 修改文件
-<span class="meta prompt_"></span>
-<span class="meta prompt_"># </span><span class="language-bash">在最后加入下面几行</span>
-
-http_proxy=http://[Windows服务端IP]:18088  # 例 http://192.168.0.1:18088
-https_proxy=http://[Windows服务端IP]:18088 # 具体看自己局域网内Windows服务端IP地址
-export http_proxy  https_proxy</code></pre>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">vim /etc/profile # 修改文件</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">在最后加入下面几行</span></span><br><span class="line"></span><br><span class="line">http_proxy=http://[Windows服务端IP]:18088  # 例 http://192.168.0.1:18088</span><br><span class="line">https_proxy=http://[Windows服务端IP]:18088 # 具体看自己局域网内Windows服务端IP地址</span><br><span class="line">export http_proxy  https_proxy</span><br></pre></td></tr></table></figure>
 
 <blockquote>
 <p>这时<code>Linux</code>可以上网了, 但是不能使用<code>ping</code>, 可以使用<code>curl</code>测试<a target="_blank" rel="noopener" href="http://www.baidu.com/">www.baidu.com</a></p>
@@ -268,36 +261,30 @@ export http_proxy  https_proxy</code></pre>
 <h2 id="代理后Docker无法拉取镜像"><a href="#代理后Docker无法拉取镜像" class="headerlink" title="代理后Docker无法拉取镜像"></a>代理后Docker无法拉取镜像</h2><h3 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h3><ol>
 <li>为docker服务创建一个内嵌的systemd目录和conf文件</li>
 </ol>
-<pre><code class="highlight shell">mkdir -p /etc/systemd/system/docker.service.d
-vi /etc/systemd/system/docker.service.d/http-proxy.conf</code></pre>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">mkdir -p /etc/systemd/system/docker.service.d</span><br><span class="line">vi /etc/systemd/system/docker.service.d/http-proxy.conf</span><br></pre></td></tr></table></figure>
 
 <ol start="2">
 <li>添加环境变量</li>
 </ol>
-<pre><code class="highlight shell">[Service]
-Environment=&quot;HTTP_PROXY=http://[Windows服务端IP]:18088/&quot;
-Environment=&quot;HTTPS_PROXY=http://[Windows服务端IP]:18088/&quot;
-Environment=&quot;NO_PROXY=localhost,127.0.0.1&quot;</code></pre>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[Service]</span><br><span class="line">Environment=&quot;HTTP_PROXY=http://[Windows服务端IP]:18088/&quot;</span><br><span class="line">Environment=&quot;HTTPS_PROXY=http://[Windows服务端IP]:18088/&quot;</span><br><span class="line">Environment=&quot;NO_PROXY=localhost,127.0.0.1&quot;</span><br></pre></td></tr></table></figure>
 
 <p><strong>注意事项：</strong> HTTPS_PROXY后的url也是http开头，而不是https，否则会报错</p>
 <ol start="3">
 <li>查看变量是否设置成功</li>
 </ol>
-<pre><code class="highlight shell">systemctl show --property=Environment docker</code></pre>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">systemctl show --property=Environment docker</span><br></pre></td></tr></table></figure>
 
 <ol start="4">
 <li>重启服务</li>
 </ol>
-<pre><code class="highlight shell">systemctl daemon-reload
-systemctl restart docker</code></pre>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">systemctl daemon-reload</span><br><span class="line">systemctl restart docker</span><br></pre></td></tr></table></figure>
 
 <h2 id="代理后Ubuntu无法使用apt下载"><a href="#代理后Ubuntu无法使用apt下载" class="headerlink" title="代理后Ubuntu无法使用apt下载"></a>代理后Ubuntu无法使用apt下载</h2><h3 id="解决方案-1"><a href="#解决方案-1" class="headerlink" title="解决方案"></a>解决方案</h3><p>新建文件<code>/etc/apt/apt.conf</code>(文件名任意)</p>
 <p>内容如下:</p>
-<pre><code class="highlight shell">Acquire::http::proxy &quot;http://[Windows服务端IP]:18088/&quot;; 
-Acquire::https::proxy &quot;http://[Windows服务端IP]:18088/&quot;;</code></pre>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">Acquire::http::proxy &quot;http://[Windows服务端IP]:18088/&quot;; </span><br><span class="line">Acquire::https::proxy &quot;http://[Windows服务端IP]:18088/&quot;;</span><br></pre></td></tr></table></figure>
 
 <p>之后下载软件时, 如下操作:</p>
-<pre><code class="highlight shell">sudo apt install vim -c /etc/apt/apt.conf # -c 指定配置文件</code></pre>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo apt install vim -c /etc/apt/apt.conf # -c 指定配置文件</span><br></pre></td></tr></table></figure>
     </div>
 
     
@@ -317,8 +304,8 @@ Acquire::https::proxy &quot;http://[Windows服务端IP]:18088/&quot;;</code></pr
     <div class="post-nav">
       <div class="post-nav-item"></div>
       <div class="post-nav-item">
-    <a href="/2023/11/06/client-go/" rel="next" title="client-go">
-      client-go <i class="fa fa-chevron-right"></i>
+    <a href="/2023/10/28/cobra/" rel="next" title="Cobra一个很棒的命令行库">
+      Cobra一个很棒的命令行库 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -394,20 +381,20 @@ Acquire::https::proxy &quot;http://[Windows服务端IP]:18088/&quot;;</code></pr
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">2</span>
+          <span class="site-state-item-count">4</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-count">4</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-count">8</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -452,13 +439,13 @@ Acquire::https::proxy &quot;http://[Windows服务端IP]:18088/&quot;;</code></pr
       <i class="fa fa-chart-area"></i>
     </span>
       <span class="post-meta-item-text">站点总字数：</span>
-    <span title="站点总字数">4k</span>
+    <span title="站点总字数">5k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">14 分钟</span>
+    <span title="站点阅读时长">19 分钟</span>
 </div>
 
         
