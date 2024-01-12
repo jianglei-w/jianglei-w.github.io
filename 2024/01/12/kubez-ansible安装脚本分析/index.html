@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="https://fonts.lug.ustc.edu.cn/css?family=Source Han Serif:300,300italic,400,400italic,700,700italic|JetBrains Mono:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"flat"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="kubez-ansible安装脚本分析 To provide quick deployment tools for kubernetes cluster and cloud native application  项目地址：https:&#x2F;&#x2F;github.com&#x2F;pixiu-io&#x2F;kubez-ansible">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JL.&#39;s Blog">
+<meta property="og:url" content="http://example.com/2024/01/12/kubez-ansible%E5%AE%89%E8%A3%85%E8%84%9A%E6%9C%AC%E5%88%86%E6%9E%90/index.html">
+<meta property="og:site_name" content="JL.&#39;s Blog">
+<meta property="og:description" content="kubez-ansible安装脚本分析 To provide quick deployment tools for kubernetes cluster and cloud native application  项目地址：https:&#x2F;&#x2F;github.com&#x2F;pixiu-io&#x2F;kubez-ansible">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2024-01-12T14:09:43.839Z">
+<meta property="article:modified_time" content="2024-01-12T14:16:28.639Z">
+<meta property="article:author" content="JL.">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2024/01/12/kubez-ansible%E5%AE%89%E8%A3%85%E8%84%9A%E6%9C%AC%E5%88%86%E6%9E%90/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title> | JL.'s Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">JL.'s Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Cloud</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">8</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类<span class="badge">5</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">6</span></a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2024/01/12/kubez-ansible%E5%AE%89%E8%A3%85%E8%84%9A%E6%9C%AC%E5%88%86%E6%9E%90/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/64891116?s=400&u=df918c1e5933d81c650852ee3d66f426a3d4148a&v=4">
+      <meta itemprop="name" content="JL.">
+      <meta itemprop="description" content="Cloud Native">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="JL.'s Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2024-01-12 22:09:43 / 修改时间：22:16:28" itemprop="dateCreated datePublished" datetime="2024-01-12T22:09:43+08:00">2024-01-12</time>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>938</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="kubez-ansible安装脚本分析"><a href="#kubez-ansible安装脚本分析" class="headerlink" title="kubez-ansible安装脚本分析"></a>kubez-ansible安装脚本分析</h1><blockquote>
+<p>To provide quick deployment tools for kubernetes cluster and cloud native application</p>
+</blockquote>
+<p>项目地址：<a target="_blank" rel="noopener" href="https://github.com/pixiu-io/kubez-ansible">https://github.com/pixiu-io/kubez-ansible</a></p>
+<span id="more"></span>
+
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">!/usr/bin/env bash</span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"></span></span><br><span class="line"><span class="language-bash"><span class="comment"># Bootstrap script to install kubernetes env.</span></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"></span></span><br><span class="line"><span class="language-bash"><span class="comment"># This script is intended to be used for install kubernetes env.</span></span></span><br><span class="line"></span><br><span class="line">REPO=gopixiu-io</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">选择需要安装的分支，默认 master 分支</span></span><br><span class="line">BRANCH=master</span><br><span class="line"></span><br><span class="line">TARGET=kubez-ansible-$&#123;BRANCH//\//-&#125;</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">安装lsb_release命令，后面会用</span></span><br><span class="line">function _ensure_lsb_release &#123;</span><br><span class="line">    if type lsb_release &gt;/dev/null 2&gt;&amp;1; then</span><br><span class="line">        return</span><br><span class="line">    fi</span><br><span class="line"></span><br><span class="line">    if type apt-get &gt;/dev/null 2&gt;&amp;1; then</span><br><span class="line">        apt-get -y install lsb-release</span><br><span class="line">    elif type yum &gt;/dev/null 2&gt;&amp;1; then</span><br><span class="line">        yum -y install redhat-lsb-core</span><br><span class="line">    fi</span><br><span class="line"></span><br><span class="line">    if type dnf &gt;/dev/null 2&gt;&amp;1; then</span><br><span class="line">        dnf -y install redhat-lsb-core</span><br><span class="line">    fi</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">function _is_distro &#123;</span><br><span class="line">    if [[ -z &quot;$DISTRO&quot; ]]; then</span><br><span class="line">        _ensure_lsb_release</span><br><span class="line">        DISTRO=$(lsb_release -si)</span><br><span class="line">    fi</span><br><span class="line"></span><br><span class="line">    [[ &quot;$DISTRO&quot; == &quot;$1&quot; ]]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">function is_ubuntu &#123;</span><br><span class="line">    _is_distro &quot;Ubuntu&quot;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">function is_debian &#123;</span><br><span class="line">    _is_distro &quot;Debian&quot;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">function is_centos &#123;</span><br><span class="line">    _is_distro &quot;CentOS&quot;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">function is_rocky &#123;</span><br><span class="line">    _is_distro &quot;Rocky&quot;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">function ensure_python3_installed &#123;</span><br><span class="line">    if type python3 &gt;/dev/null 2&gt;&amp;1; then</span><br><span class="line">        return</span><br><span class="line">    else</span><br><span class="line">        echo &quot;python3 not be found&quot; 1&gt;&amp;2</span><br><span class="line">        echo &quot;CentOS 7, Debian 10 and Ubuntu 18.04 with python2 should refer to https://github.com/gopixiu-io/kubez-ansible/tree/stable/tiger&quot; 1&gt;&amp;2</span><br><span class="line">        exit 1</span><br><span class="line">    fi</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">function prep_work &#123;</span><br><span class="line">    if is_rocky; then</span><br><span class="line">        if [[ &quot;$(systemctl is-enabled firewalld)&quot; == &quot;active&quot; ]]; then</span><br><span class="line">            systemctl disable firewalld</span><br><span class="line">        fi</span><br><span class="line">        if [[ &quot;$(systemctl is-active firewalld)&quot; == &quot;enabled&quot; ]]; then</span><br><span class="line">            systemctl stop firewalld</span><br><span class="line">        fi</span><br><span class="line">        configure_rocky_souces</span><br><span class="line">        dnf -y install epel-release</span><br><span class="line">        dnf -y install git python3-pip unzip</span><br><span class="line"></span><br><span class="line">    elif is_ubuntu || is_debian; then</span><br><span class="line">        if [[ &quot;$(systemctl is-enabled ufw)&quot; == &quot;active&quot; ]]; then</span><br><span class="line">            systemctl disable ufw</span><br><span class="line">        fi</span><br><span class="line">        if [[ &quot;$(systemctl is-active ufw)&quot; == &quot;enabled&quot; ]]; then</span><br><span class="line">            systemctl stop ufw</span><br><span class="line">        fi</span><br><span class="line"></span><br><span class="line">        if is_debian; then</span><br><span class="line">            configure_debian_sources</span><br><span class="line">        else</span><br><span class="line">            configure_ubuntu_sources</span><br><span class="line">        fi</span><br><span class="line">        apt-get update</span><br><span class="line">        </span><br><span class="line">        apt install -y git python3-pip unzip</span><br><span class="line">    else</span><br><span class="line">        echo &quot;当前版本不支持: $DISTRO&quot; 1&gt;&amp;2</span><br><span class="line">        echo &quot;CentOS 7, Debian 10 &amp; Ubuntu 18.04 等操作系统，请参考 https://github.com/gopixiu-io/kubez-ansible/tree/stable/tiger&quot; 1&gt;&amp;2</span><br><span class="line"></span><br><span class="line">        echo &quot;Unsupported Distro: $DISTRO&quot; 1&gt;&amp;2</span><br><span class="line">        echo &quot;CentOS 7, Debian 10 and Ubuntu 18.04 with python2 should refer to https://github.com/gopixiu-io/kubez-ansible/tree/stable/tiger&quot; 1&gt;&amp;2</span><br><span class="line">        exit 1</span><br><span class="line">    fi</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">function cleanup &#123;</span><br><span class="line">    if is_centos; then</span><br><span class="line">        yum clean all</span><br><span class="line">    elif is_ubuntu || is_debian; then</span><br><span class="line">        apt-get clean</span><br><span class="line">    else</span><br><span class="line">        echo &quot;Unsupported Distro: $DISTRO&quot; 1&gt;&amp;2</span><br><span class="line">        exit 1</span><br><span class="line">    fi</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">function configure_pip &#123;</span><br><span class="line">    mkdir -p ~/.pip</span><br><span class="line">    cat &gt; ~/.pip/pip.conf &lt;&lt; EOF</span><br><span class="line">[global]</span><br><span class="line">trusted-host = mirrors.aliyun.com</span><br><span class="line">index-url = http://mirrors.aliyun.com/pypi/simple/</span><br><span class="line">EOF</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">function configure_centos_sources &#123;</span><br><span class="line">    if [ ! -f &quot;/etc/yum.repos.d/CentOS-Base.repo.backup&quot; ];then</span><br><span class="line">         mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup</span><br><span class="line">    fi</span><br><span class="line">    # CentOS 7</span><br><span class="line">    curl http://mirrors.aliyun.com/repo/Centos-7.repo -o /etc/yum.repos.d/CentOS-Base.repo</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">function configure_rocky_souces &#123;</span><br><span class="line">    sed -e &#x27;s|^mirrorlist=|#mirrorlist=|g&#x27; \</span><br><span class="line">    -e &#x27;s|^#baseurl=http://dl.rockylinux.org/$contentdir|baseurl=https://mirrors.aliyun.com/rockylinux|g&#x27; \</span><br><span class="line">    -i.bak \</span><br><span class="line">    /etc/yum.repos.d/Rocky-*.repo</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">function configure_debian_sources &#123;</span><br><span class="line">    if [ ! -f &quot;/etc/apt/sources.list.backup&quot; ];then</span><br><span class="line">         mv /etc/apt/sources.list /etc/apt/sources.list.backup</span><br><span class="line">    fi</span><br><span class="line"></span><br><span class="line">    UBUNTU_CODENAME=$(cat /etc/os-release |egrep &quot;^VERSION_CODENAME=\&quot;*(\w+)\&quot;*&quot; |awk -F= &#x27;&#123;print $2&#125;&#x27; |tr -d &#x27;\&quot;&#x27;)</span><br><span class="line">    # debian 11.x+</span><br><span class="line">    cat &gt; /etc/apt/sources.list &lt;&lt; EOF</span><br><span class="line">deb https://mirrors.aliyun.com/debian/ $&#123;UBUNTU_CODENAME&#125; main non-free contrib</span><br><span class="line">deb-src https://mirrors.aliyun.com/debian/ $&#123;UBUNTU_CODENAME&#125; main non-free contrib</span><br><span class="line">deb https://mirrors.aliyun.com/debian-security/ $&#123;UBUNTU_CODENAME&#125;-security main</span><br><span class="line">deb-src https://mirrors.aliyun.com/debian-security/ $&#123;UBUNTU_CODENAME&#125;-security main</span><br><span class="line">deb https://mirrors.aliyun.com/debian/ $&#123;UBUNTU_CODENAME&#125;-updates main non-free contrib</span><br><span class="line">deb-src https://mirrors.aliyun.com/debian/ $&#123;UBUNTU_CODENAME&#125;-updates main non-free contrib</span><br><span class="line">deb https://mirrors.aliyun.com/debian/ $&#123;UBUNTU_CODENAME&#125;-backports main non-free contrib</span><br><span class="line">deb-src https://mirrors.aliyun.com/debian/ $&#123;UBUNTU_CODENAME&#125;-backports main non-free contrib</span><br><span class="line">EOF</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">function configure_ubuntu_sources() &#123;</span><br><span class="line">    if [ ! -f &quot;/etc/apt/sources.list.backup&quot; ];then</span><br><span class="line">        mv /etc/apt/sources.list /etc/apt/sources.list.backup</span><br><span class="line">    fi</span><br><span class="line"></span><br><span class="line">    UBUNTU_CODENAME=$(cat /etc/os-release |egrep &quot;^VERSION_CODENAME=\&quot;*(\w+)\&quot;*&quot; |awk -F= &#x27;&#123;print $2&#125;&#x27; |tr -d &#x27;\&quot;&#x27;)</span><br><span class="line">    cat &gt; /etc/apt/sources.list &lt;&lt; EOF</span><br><span class="line">deb https://mirrors.aliyun.com/ubuntu/ $&#123;UBUNTU_CODENAME&#125; main restricted universe multiverse</span><br><span class="line">deb-src https://mirrors.aliyun.com/ubuntu/ $&#123;UBUNTU_CODENAME&#125; main restricted universe multiverse</span><br><span class="line"></span><br><span class="line">deb https://mirrors.aliyun.com/ubuntu/ $&#123;UBUNTU_CODENAME&#125;-security main restricted universe multiverse</span><br><span class="line">deb-src https://mirrors.aliyun.com/ubuntu/ $&#123;UBUNTU_CODENAME&#125;-security main restricted universe multiverse</span><br><span class="line"></span><br><span class="line">deb https://mirrors.aliyun.com/ubuntu/ $&#123;UBUNTU_CODENAME&#125;-updates main restricted universe multiverse</span><br><span class="line">deb-src https://mirrors.aliyun.com/ubuntu/ $&#123;UBUNTU_CODENAME&#125;-updates main restricted universe multiverse</span><br><span class="line"></span><br><span class="line">deb https://mirrors.aliyun.com/ubuntu/ $&#123;UBUNTU_CODENAME&#125;-backports main restricted universe multiverse</span><br><span class="line">deb-src https://mirrors.aliyun.com/ubuntu/ $&#123;UBUNTU_CODENAME&#125;-backports main restricted universe multiverse</span><br><span class="line">EOF</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">function install_ansible &#123;</span><br><span class="line">    if is_centos; then</span><br><span class="line">        yum -y install ansible</span><br><span class="line">    elif is_ubuntu || is_debian; then</span><br><span class="line">        apt-get -y install ansible</span><br><span class="line">    elif is_rocky; then</span><br><span class="line">        dnf -y install ansible</span><br><span class="line">    else</span><br><span class="line">        echo &quot;Unsupported Distro: $DISTRO&quot; 1&gt;&amp;2</span><br><span class="line">        exit 1</span><br><span class="line">    fi</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">function download_kubez_ansible &#123;</span><br><span class="line">    curl https://codeload.github.com/$&#123;REPO&#125;/kubez-ansible/zip/refs/heads/$&#123;BRANCH&#125; -o $&#123;TARGET&#125;.zip</span><br><span class="line">    if [ $? -ne 0 ]; then</span><br><span class="line">        exit 1</span><br><span class="line">    fi</span><br><span class="line"></span><br><span class="line">    unzip -q $&#123;TARGET&#125;.zip &amp;&amp; mv $&#123;TARGET&#125; /tmp/kubez-ansible &amp;&amp; git init /tmp/kubez-ansible</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">function install_kubez_ansible &#123;</span><br><span class="line">    if [[ ! -d /tmp/kubez-ansible ]]; then</span><br><span class="line">        download_kubez_ansible</span><br><span class="line">    fi</span><br><span class="line">    # prepare the configuration for deploy</span><br><span class="line">    cp -r /tmp/kubez-ansible/etc/kubez/ /etc/</span><br><span class="line">    cp /tmp/kubez-ansible/ansible/inventory/multinode .</span><br><span class="line"></span><br><span class="line">    install_ansible</span><br><span class="line"></span><br><span class="line">    if is_rocky; then</span><br><span class="line">        # TODO: ansible will search the kubez_ansible plugin from python3.9</span><br><span class="line">        python_version=$(python3 -c &quot;import sys;print(sys.version[2])&quot;)</span><br><span class="line">        cp -r /usr/local/lib/python3.$&#123;python_version&#125;/site-packages/kubez_ansible /usr/lib/python3.9/site-packages/</span><br><span class="line">    fi</span><br><span class="line"></span><br><span class="line">    pip3 install -r /tmp/kubez-ansible/requirements.txt</span><br><span class="line">    pip3 install /tmp/kubez-ansible/</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">ensure_python3_installed</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">prepare and install kubernetes cluster</span></span><br><span class="line">prep_work</span><br><span class="line">configure_pip</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">cleanup</span></span><br><span class="line">install_kubez_ansible</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>ensure_python3_installed —&gt;判断python3是否安装</li>
+<li>prep_work —&gt; 关闭防火墙，配置源，安装git, python3-pip unzip</li>
+<li>configure_pip —&gt; 配置pip源，修改~&#x2F;.pip&#x2F;pip.conf</li>
+<li>install_kubez_ansible —&gt; 下载kubez-ansible源码，拷贝一些配置文件到指定目录，安装ansible，安装python依赖</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2024/01/12/linux/" rel="prev" title="记录">
+      <i class="fa fa-chevron-left"></i> 记录
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#kubez-ansible%E5%AE%89%E8%A3%85%E8%84%9A%E6%9C%AC%E5%88%86%E6%9E%90"><span class="nav-text">kubez-ansible安装脚本分析</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="JL."
+      src="https://avatars.githubusercontent.com/u/64891116?s=400&u=df918c1e5933d81c650852ee3d66f426a3d4148a&v=4">
+  <p class="site-author-name" itemprop="name">JL.</p>
+  <div class="site-description" itemprop="description">Cloud Native</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">6</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/jianglei-w" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;jianglei-w" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:jianglei.new@gmail.com" title="E-Mail → mailto:jianglei.new@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i></a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 20 – 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jianglei</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">7k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">24 分钟</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
