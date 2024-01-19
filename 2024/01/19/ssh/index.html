@@ -20,19 +20,25 @@
     var CONFIG = {"hostname":"jianglei-w.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"flat"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"gitalk","storage":true,"lazyload":false,"nav":null,"activeClass":"gitalk"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta name="description" content="记录不常使用且碰到又找不到的命令以及碰到的问题和解决方案。本文会持续更新…">
+  <meta name="description" content="我们都知道SSH Server支持两种验证方式：密钥认证和账户密码认证">
 <meta property="og:type" content="article">
-<meta property="og:title" content="记录">
-<meta property="og:url" content="https://jianglei-w.github.io/2024/01/12/linux/index.html">
+<meta property="og:title" content="ssh连接错误剖析">
+<meta property="og:url" content="https://jianglei-w.github.io/2024/01/19/ssh/index.html">
 <meta property="og:site_name" content="JL&#39;s Blog">
-<meta property="og:description" content="记录不常使用且碰到又找不到的命令以及碰到的问题和解决方案。本文会持续更新…">
+<meta property="og:description" content="我们都知道SSH Server支持两种验证方式：密钥认证和账户密码认证">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2024-01-12T13:45:57.362Z">
-<meta property="article:modified_time" content="2024-01-19T03:21:13.169Z">
+<meta property="og:image" content="https://jianglei-w.github.io/images/image-20240119131312630.png">
+<meta property="og:image" content="https://jianglei-w.github.io/images/image-20240119134832627.png">
+<meta property="og:image" content="https://jianglei-w.github.io/images/image-20240119143252927.png">
+<meta property="article:published_time" content="2024-01-18T16:00:00.000Z">
+<meta property="article:modified_time" content="2024-01-19T06:49:02.835Z">
 <meta property="article:author" content="JL.">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="SSH">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://jianglei-w.github.io/images/image-20240119131312630.png">
 
-<link rel="canonical" href="https://jianglei-w.github.io/2024/01/12/linux/">
+<link rel="canonical" href="https://jianglei-w.github.io/2024/01/19/ssh/">
 
 
 <script id="page-configurations">
@@ -45,7 +51,7 @@
   };
 </script>
 
-  <title>记录 | JL's Blog</title>
+  <title>ssh连接错误剖析 | JL's Blog</title>
   
 
 
@@ -166,7 +172,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://jianglei-w.github.io/2024/01/12/linux/">
+    <link itemprop="mainEntityOfPage" href="https://jianglei-w.github.io/2024/01/19/ssh/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="https://avatars.githubusercontent.com/u/64891116?s=400&u=df918c1e5933d81c650852ee3d66f426a3d4148a&v=4">
@@ -179,7 +185,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          记录
+          ssh连接错误剖析
         </h1>
 
         <div class="post-meta">
@@ -188,23 +194,17 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
+              
 
-              <time title="创建时间：2024-01-12 21:45:57" itemprop="dateCreated datePublished" datetime="2024-01-12T21:45:57+08:00">2024-01-12</time>
+              <time title="创建时间：2024-01-19 00:00:00 / 修改时间：14:49:02" itemprop="dateCreated datePublished" datetime="2024-01-19T00:00:00+08:00">2024-01-19</time>
             </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2024-01-19 11:21:13" itemprop="dateModified" datetime="2024-01-19T11:21:13+08:00">2024-01-19</time>
-              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Troubleshooting/" itemprop="url" rel="index"><span itemprop="name">Troubleshooting</span></a>
+                  <a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a>
                 </span>
             </span>
 
@@ -214,14 +214,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>276</span>
+              <span>1.2k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>1 分钟</span>
+              <span>4 分钟</span>
             </span>
 
         </div>
@@ -233,29 +233,44 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>记录不常使用且碰到又找不到的命令以及碰到的问题和解决方案。本文会持续更新…</p>
+        <p>我们都知道SSH Server支持两种验证方式：密钥认证和账户密码认证</p>
 <span id="more"></span>
 
-<h2 id="一条命令实现安装VM-tools"><a href="#一条命令实现安装VM-tools" class="headerlink" title="一条命令实现安装VM-tools"></a>一条命令实现安装VM-tools</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo apt install open-vm-tools-desktop</span><br></pre></td></tr></table></figure>
+<h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>之前碰到过一个问题，将虚拟机重装后（IP还是原来的IP），ssh重新连接到虚拟机发现出现如下图警告，并且无法连接，其实最简单的方法是删除<code>~/.ssh/known_hosts</code>中的第二行，重新连接即可输入密码进行连接。图片中的报错也有提到（<strong>Offending ECDSA key in ~&#x2F;.ssh&#x2F;known_hosts</strong>），之前解决了也没去想过为什么会这样，接下来我们通过SSH的工作方式来分析在这里为什么会发出警告，以及为什么要这么设计。</p>
+<img src="/images/image-20240119131312630.png" alt="image-20240119143252927" style="zoom:50%;" />
 
-<blockquote>
-<p>说明：此为开源的软件包，非VMware自家的</p>
-</blockquote>
-<h2 id="Linux挂载samba"><a href="#Linux挂载samba" class="headerlink" title="Linux挂载samba"></a>Linux挂载samba</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">mount -t cifs -o vers=3.0 //192.168.216.155/share /opt/</span><br></pre></td></tr></table></figure>
+<h2 id="SSH原理"><a href="#SSH原理" class="headerlink" title="SSH原理"></a>SSH原理</h2><p>我们都知道ssh客户端有两种认证方式，一是通过账号密码认证，二是通过私钥认证。接下来我们来看一下这两种认证的工作方式。</p>
+<h3 id="密码认证"><a href="#密码认证" class="headerlink" title="密码认证"></a>密码认证</h3><img src="/images/image-20240119134832627.png" style="zoom:50%;" />
 
-<h2 id="ubuntu22-04-php7-x编译时依赖openssl报错"><a href="#ubuntu22-04-php7-x编译时依赖openssl报错" class="headerlink" title="ubuntu22.04 php7.x编译时依赖openssl报错"></a>ubuntu22.04 php7.x编译时依赖openssl报错</h2><p>错误如下</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">expected ‘RSA *’ &#123;aka ‘struct rsa_st *’&#125; but argument is of <span class="built_in">type</span> ‘const struct rsa_st *’ 289 | RSA *rsa, int padding);</span><br></pre></td></tr></table></figure>
+<p>下面有一些需要补充的地方：</p>
+<ul>
+<li><p>在客户端向服务端发送ssh连接请求时，已经将自己openssh版本、支持的加密算法等等信息发送给了服务端，服务端会进行协商从而选择发送什么加密算法的密钥（<code>/etc/ssh中的密钥</code>）</p>
+</li>
+<li><p>在第二步的时候，如果客户端是首次连接这个服务器，则终端会返回<code>Are you sure you want to continue connecting (yes/no/[fingerprint])?</code>信息，这个信息代表不确定这个服务器的真实性，需要用户自行判断，在键盘输入<code>yes</code>后，ssh会将服务端发来的公钥进行存储在<code>~/.ssh/known.hosts</code>中，代表已经信任该主机。下次连接同样的服务器时，验证公钥的真实性</p>
+</li>
+<li><p>最后一步服务端验证密码正确性时所使用的私钥只有服务端才有，如果说在客户端发送加密密码的过程中被其他人截获，也无法得到明文密码</p>
+</li>
+</ul>
+<h3 id="密钥认证"><a href="#密钥认证" class="headerlink" title="密钥认证"></a>密钥认证</h3><img src="/images/image-20240119143252927.png" alt="image-20240119143252927" style="zoom:50%;" />
 
-<p>解决方案：<a target="_blank" rel="noopener" href="https://github.com/phpbrew/phpbrew/issues/1263">https://github.com/phpbrew/phpbrew/issues/1263</a></p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">export</span> PKG_CONFIG_PATH=PATH/TO/OPENSSL/bin/lib/pkgconfig</span><br></pre></td></tr></table></figure>
-
-<h2 id="Docker查看镜像制作过程"><a href="#Docker查看镜像制作过程" class="headerlink" title="Docker查看镜像制作过程"></a>Docker查看镜像制作过程</h2><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">从下到上的过程</span></span><br><span class="line">docker history --format &#123;&#123;.CreatedBy&#125;&#125; --no-trunc=true &#123;IMAGE_NAME&#125;</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">反过来</span></span><br><span class="line">docker history --format &#123;&#123;.CreatedBy&#125;&#125; --no-trunc=true &#123;IMAGE_NAME&#125; | sed &quot;s/\/bin\/sh\ -c\ \#(nop)\ //g&quot;|sed &quot;s/\/bin\/sh\ -c/RUN/g&quot; | tac</span><br></pre></td></tr></table></figure>
-
-<h2 id="记一次istio部署完成后，无法注入成功"><a href="#记一次istio部署完成后，无法注入成功" class="headerlink" title="记一次istio部署完成后，无法注入成功"></a>记一次istio部署完成后，无法注入成功</h2><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">修改kube-apiserver的配置</span></span><br><span class="line">vim /etc/kubernetes/manifests/kube-apiserver.yaml</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">加一条启动参数</span></span><br><span class="line">--enable-aggregator-routing=true</span><br></pre></td></tr></table></figure>
-
-<h2 id="一条命令在Kubernetes中创建一个Debug-Pod"><a href="#一条命令在Kubernetes中创建一个Debug-Pod" class="headerlink" title="一条命令在Kubernetes中创建一个Debug Pod"></a>一条命令在Kubernetes中创建一个Debug Pod</h2><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">kubectl run -i --tty --rm debug --image=busybox --restart=Never -- sh</span><br></pre></td></tr></table></figure>
-
-<p>也可以使用自己制作的镜像AAAAB3NzaC1yc2EAAAADAQABAAABAQDFrP4rZOXvCOwg+++Yh0LZ3A2KwvYHS60XMnCnEqiaA0NnZh3uCwf&#x2F;fayj6Ut3QT1prRVGfR58RlqgRf7RKcr49G64+U452pBVE0hvG&#x2F;kzobpt245dF976a0tDnfnMfcZCP2IG98otwGhsA9cWMEziJRqDu6w0Hd5nmGf&#x2F;ih7MuvSgcKyd5DtTAqfsEsX4v0ydYR5a7hW1FHd2&#x2F;8KsMdXFyxAYCCPlVuqGh2nc6D5sqRy7el3itYC&#x2F;oT037nBshMDhjvd25NIzKXWRJx2L5&#x2F;npcW5xgVRL6yPNfcuElI76YmLMXM+J6TfZfcJCB+uRzcUa1DHgKvRW4Qi+CD1JbSVv</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>在了解了ssh工作原理之后，就知道前面的报错是为什么了</p>
+<p>重装系统后，再次连接主机，当主机发送过来的公钥和本地<code>~/.ssh/known.hosts</code>中文件对比，发现远程主机的公钥发生了变化，断开了连接。为什么要这么设计，如果我们不验证公钥的一致性，使用这个新的公钥加密后，将加密后的密码发送过去时，这时候我们的密码就已经泄露了。</p>
+<p><strong>下面附上gpt的回答</strong>：</p>
+<p>Q：为什么会导致Remote Host IDENTIFICATION HAS CHANGED</p>
+<p>A：”Remote Host Identification Has Changed”错误通常在你尝试连接到之前已经连接过的远程主机时发生。这个错误的原因是远程主机的身份信息发生了变化，与你之前连接时记录的身份信息不匹配。</p>
+<p>SSH连接建立时，客户端会将远程主机的公钥保存在本地的”known_hosts”文件中，以便后续连接时进行验证。当你再次尝试连接时，客户端会比对远程主机的公钥与”known_hosts”文件中保存的公钥是否匹配，以确保连接的安全性。</p>
+<p>当远程主机的公钥发生变化时，比如操作系统重新安装、SSH服务重新配置或者网络攻击等情况，客户端会检测到公钥不匹配的情况，从而引发”Remote Host Identification Has Changed”错误。</p>
+<p>这个错误提示你远程主机的身份信息已经改变，可能存在安全风险。为了解决这个问题，你可以采取以下步骤之一：</p>
+<ol>
+<li><p>更新”known_hosts”文件：如果你确定远程主机的身份信息确实发生了合理的变化（例如，你知道主机已经进行了重装或配置更改），可以手动更新”known_hosts”文件，删除对应远程主机的旧记录。下次连接时，客户端将会接受并保存新的公钥。</p>
+</li>
+<li><p>谨慎连接：如果你不确定远程主机的身份信息发生了何种变化，特别是在没有明确的原因或未知的网络状况下，建议谨慎连接。你可以联系远程主机的管理员或负责人，核实身份信息的变化，并确保连接的安全性。</p>
+</li>
+</ol>
+<p>需要注意的是，更新”known_hosts”文件或继续连接之前，请确保确认远程主机的身份信息是可信的，以保护你的连接安全。</p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ol>
+<li>SSH 原理和基本应用：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/241341815">https://zhuanlan.zhihu.com/p/241341815</a></li>
+</ol>
 
     </div>
 
@@ -264,6 +279,10 @@
     
 
       <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Linux/" rel="tag"># Linux</a>
+              <a href="/tags/SSH/" rel="tag"># SSH</a>
+          </div>
 
         
 
@@ -271,13 +290,10 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2024/01/12/terminal-recording/" rel="prev" title="Linux终端录制为gif">
-      <i class="fa fa-chevron-left"></i> Linux终端录制为gif
+    <a href="/2024/01/12/kubez-ansible%E5%AE%89%E8%A3%85%E8%84%9A%E6%9C%AC%E5%88%86%E6%9E%90/" rel="prev" title="kubez-ansible shell脚本分析">
+      <i class="fa fa-chevron-left"></i> kubez-ansible shell脚本分析
     </a></div>
-      <div class="post-nav-item">
-    <a href="/2024/01/12/kubez-ansible%E5%AE%89%E8%A3%85%E8%84%9A%E6%9C%AC%E5%88%86%E6%9E%90/" rel="next" title="kubez-ansible shell脚本分析">
-      kubez-ansible shell脚本分析 <i class="fa fa-chevron-right"></i>
-    </a></div>
+      <div class="post-nav-item"></div>
     </div>
       </footer>
     
@@ -337,7 +353,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E6%9D%A1%E5%91%BD%E4%BB%A4%E5%AE%9E%E7%8E%B0%E5%AE%89%E8%A3%85VM-tools"><span class="nav-text">一条命令实现安装VM-tools</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Linux%E6%8C%82%E8%BD%BDsamba"><span class="nav-text">Linux挂载samba</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ubuntu22-04-php7-x%E7%BC%96%E8%AF%91%E6%97%B6%E4%BE%9D%E8%B5%96openssl%E6%8A%A5%E9%94%99"><span class="nav-text">ubuntu22.04 php7.x编译时依赖openssl报错</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Docker%E6%9F%A5%E7%9C%8B%E9%95%9C%E5%83%8F%E5%88%B6%E4%BD%9C%E8%BF%87%E7%A8%8B"><span class="nav-text">Docker查看镜像制作过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%B0%E4%B8%80%E6%AC%A1istio%E9%83%A8%E7%BD%B2%E5%AE%8C%E6%88%90%E5%90%8E%EF%BC%8C%E6%97%A0%E6%B3%95%E6%B3%A8%E5%85%A5%E6%88%90%E5%8A%9F"><span class="nav-text">记一次istio部署完成后，无法注入成功</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E6%9D%A1%E5%91%BD%E4%BB%A4%E5%9C%A8Kubernetes%E4%B8%AD%E5%88%9B%E5%BB%BA%E4%B8%80%E4%B8%AADebug-Pod"><span class="nav-text">一条命令在Kubernetes中创建一个Debug Pod</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%83%8C%E6%99%AF"><span class="nav-text">背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SSH%E5%8E%9F%E7%90%86"><span class="nav-text">SSH原理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%86%E7%A0%81%E8%AE%A4%E8%AF%81"><span class="nav-text">密码认证</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%86%E9%92%A5%E8%AE%A4%E8%AF%81"><span class="nav-text">密钥认证</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-text">参考</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -478,7 +494,7 @@ NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
       repo        : 'jianglei-w.github.io',
       owner       : 'jianglei-w',
       admin       : ['jianglei-w'],
-      id          : '1a151904cf5092affc5f3b458a3445c8',
+      id          : '9b4a2330a39e58a307140d2423f9af7d',
         language: 'zh-CN',
       distractionFreeMode: true
     });
