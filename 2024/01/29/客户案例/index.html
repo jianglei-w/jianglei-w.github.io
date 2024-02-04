@@ -20,25 +20,23 @@
     var CONFIG = {"hostname":"jianglei-w.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"flat"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"gitalk","storage":true,"lazyload":false,"nav":null,"activeClass":"gitalk"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta name="description" content="我们都知道SSH Server支持两种验证方式：密钥认证和账户密码认证">
+  <meta name="description" content="架构图 《应用架构图》 应用采用三层架构（Web层、Server层、Data层），用户通过Route 53托管的域名CNAME记录访问ALB，ALB将请求转发至Web APP（前端），Web APP发起请求到内部ALB，ALB将请求转发至Server APP（后端），Server APP调用数据库  应用负载均衡器 ：面向Internet的ALB 用于分发流量到多个前端应用程序实例，面向内部的A">
 <meta property="og:type" content="article">
-<meta property="og:title" content="ssh连接错误剖析">
-<meta property="og:url" content="https://jianglei-w.github.io/2024/01/19/ssh/index.html">
+<meta property="og:title" content="JL&#39;s Blog">
+<meta property="og:url" content="https://jianglei-w.github.io/2024/01/29/%E5%AE%A2%E6%88%B7%E6%A1%88%E4%BE%8B/index.html">
 <meta property="og:site_name" content="JL&#39;s Blog">
-<meta property="og:description" content="我们都知道SSH Server支持两种验证方式：密钥认证和账户密码认证">
+<meta property="og:description" content="架构图 《应用架构图》 应用采用三层架构（Web层、Server层、Data层），用户通过Route 53托管的域名CNAME记录访问ALB，ALB将请求转发至Web APP（前端），Web APP发起请求到内部ALB，ALB将请求转发至Server APP（后端），Server APP调用数据库  应用负载均衡器 ：面向Internet的ALB 用于分发流量到多个前端应用程序实例，面向内部的A">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://jianglei-w.github.io/images/image-20240119131312630.png">
-<meta property="og:image" content="https://jianglei-w.github.io/images/image-20240119134832627.png">
-<meta property="og:image" content="https://jianglei-w.github.io/images/image-20240119143252927.png">
-<meta property="article:published_time" content="2024-01-18T16:00:00.000Z">
-<meta property="article:modified_time" content="2024-01-19T06:49:02.835Z">
+<meta property="og:image" content="https://wechigroup.feishu.cn/space/api/box/stream/download/asynccode/?code=M2IyOWQ3Y2ZhYWFkYmI5OWQ3MThjZmI3Y2FkODhiZThfRHRsUGFFTnhpd1lUMnJKYnF4MVZSeXJXeTZFMlo1MlhfVG9rZW46RXVaRmJ4M3hSb09QSFp4RUlPSmNMU3dWbkRiXzE3MDY1MTAyMzQ6MTcwNjUxMzgzNF9WNA">
+<meta property="og:image" content="https://wechigroup.feishu.cn/space/api/box/stream/download/asynccode/?code=Yjg3NjUxMmZjMWMwNzYwZWYwZGRhZDk2NThiYzE4ZmNfcmg4bGpUN2k0T1c0VkRjSkNraGtFVTVCQzVoYzFHRkpfVG9rZW46QUJIZmI1Rksxb09ybkp4TlBRcWNGbW5SbkpnXzE3MDY1MTAyMzQ6MTcwNjUxMzgzNF9WNA">
+<meta property="og:image" content="https://wechigroup.feishu.cn/space/api/box/stream/download/asynccode/?code=ZmNkOThlYTE1YTVkNTdjYmE4ZGIyODEwYmIwZWRkYzNfVDIyTXNMbG1GY2lLOEhpYjZ6SnBGMnV3QmFtQ014ZXFfVG9rZW46U2hHT2JCcElsb3lkZ3l4a29yNGM3em1obndjXzE3MDY1MTAyMzQ6MTcwNjUxMzgzNF9WNA">
+<meta property="article:published_time" content="2024-01-29T00:39:39.560Z">
+<meta property="article:modified_time" content="2024-01-29T06:37:30.058Z">
 <meta property="article:author" content="JL.">
-<meta property="article:tag" content="Linux">
-<meta property="article:tag" content="SSH">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://jianglei-w.github.io/images/image-20240119131312630.png">
+<meta name="twitter:image" content="https://wechigroup.feishu.cn/space/api/box/stream/download/asynccode/?code=M2IyOWQ3Y2ZhYWFkYmI5OWQ3MThjZmI3Y2FkODhiZThfRHRsUGFFTnhpd1lUMnJKYnF4MVZSeXJXeTZFMlo1MlhfVG9rZW46RXVaRmJ4M3hSb09QSFp4RUlPSmNMU3dWbkRiXzE3MDY1MTAyMzQ6MTcwNjUxMzgzNF9WNA">
 
-<link rel="canonical" href="https://jianglei-w.github.io/2024/01/19/ssh/">
+<link rel="canonical" href="https://jianglei-w.github.io/2024/01/29/%E5%AE%A2%E6%88%B7%E6%A1%88%E4%BE%8B/">
 
 
 <script id="page-configurations">
@@ -51,7 +49,7 @@
   };
 </script>
 
-  <title>ssh连接错误剖析 | JL's Blog</title>
+  <title> | JL's Blog</title>
   
 
 
@@ -172,7 +170,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://jianglei-w.github.io/2024/01/19/ssh/">
+    <link itemprop="mainEntityOfPage" href="https://jianglei-w.github.io/2024/01/29/%E5%AE%A2%E6%88%B7%E6%A1%88%E4%BE%8B/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="https://avatars.githubusercontent.com/u/64891116?s=400&u=df918c1e5933d81c650852ee3d66f426a3d4148a&v=4">
@@ -185,7 +183,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          ssh连接错误剖析
+          
         </h1>
 
         <div class="post-meta">
@@ -196,16 +194,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2024-01-19 00:00:00 / 修改时间：14:49:02" itemprop="dateCreated datePublished" datetime="2024-01-19T00:00:00+08:00">2024-01-19</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a>
-                </span>
+              <time title="创建时间：2024-01-29 08:39:39 / 修改时间：14:37:30" itemprop="dateCreated datePublished" datetime="2024-01-29T08:39:39+08:00">2024-01-29</time>
             </span>
 
           <br>
@@ -214,14 +203,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>1.2k</span>
+              <span>1.3k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>4 分钟</span>
+              <span>5 分钟</span>
             </span>
 
         </div>
@@ -233,43 +222,36 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>我们都知道SSH Server支持两种验证方式：密钥认证和账户密码认证</p>
-<span id="more"></span>
-
-<h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>之前碰到过一个问题，将虚拟机重装后（IP还是原来的IP），ssh重新连接到虚拟机发现出现如下图警告，并且无法连接，其实最简单的方法是删除<code>~/.ssh/known_hosts</code>中的第二行，重新连接即可输入密码进行连接。图片中的报错也有提到（<strong>Offending ECDSA key in ~&#x2F;.ssh&#x2F;known_hosts</strong>），之前解决了也没去想过为什么会这样，接下来我们通过SSH的工作方式来分析在这里为什么会发出警告，以及为什么要这么设计。</p>
-<img src="/images/image-20240119131312630.png" alt="image-20240119143252927" style="zoom:50%;" />
-
-<h2 id="SSH原理"><a href="#SSH原理" class="headerlink" title="SSH原理"></a>SSH原理</h2><p>我们都知道ssh客户端有两种认证方式，一是通过账号密码认证，二是通过私钥认证。接下来我们来看一下这两种认证的工作方式。</p>
-<h3 id="密码认证"><a href="#密码认证" class="headerlink" title="密码认证"></a>密码认证</h3><img src="/images/image-20240119134832627.png" style="zoom:50%;" />
-
-<p>下面有一些需要补充的地方：</p>
-<ul>
-<li><p>在客户端向服务端发送ssh连接请求时，已经将自己openssh版本、支持的加密算法等等信息发送给了服务端，服务端会进行协商从而选择发送什么加密算法的密钥（<code>/etc/ssh中的密钥</code>）</p>
-</li>
-<li><p>在第二步的时候，如果客户端是首次连接这个服务器，则终端会返回<code>Are you sure you want to continue connecting (yes/no/[fingerprint])?</code>信息，这个信息代表不确定这个服务器的真实性，需要用户自行判断，在键盘输入<code>yes</code>后，ssh会将服务端发来的公钥进行存储在<code>~/.ssh/known.hosts</code>中，代表已经信任该主机。下次连接同样的服务器时，验证公钥的真实性</p>
-</li>
-<li><p>最后一步服务端验证密码正确性时所使用的私钥只有服务端才有，如果说在客户端发送加密密码的过程中被其他人截获，也无法得到明文密码</p>
-</li>
-</ul>
-<h3 id="密钥认证"><a href="#密钥认证" class="headerlink" title="密钥认证"></a>密钥认证</h3><img src="/images/image-20240119143252927.png" alt="image-20240119143252927" style="zoom:50%;" />
-
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>在了解了ssh工作原理之后，就知道前面的报错是为什么了</p>
-<p>重装系统后，再次连接主机，当主机发送过来的公钥和本地<code>~/.ssh/known.hosts</code>中文件对比，发现远程主机的公钥发生了变化，断开了连接。为什么要这么设计，如果我们不验证公钥的一致性，使用这个新的公钥加密后，将加密后的密码发送过去时，这时候我们的密码就已经泄露了。</p>
-<p><strong>下面附上gpt的回答</strong>：</p>
-<p>Q：为什么会导致Remote Host IDENTIFICATION HAS CHANGED</p>
-<p>A：”Remote Host Identification Has Changed”错误通常在你尝试连接到之前已经连接过的远程主机时发生。这个错误的原因是远程主机的身份信息发生了变化，与你之前连接时记录的身份信息不匹配。</p>
-<p>SSH连接建立时，客户端会将远程主机的公钥保存在本地的”known_hosts”文件中，以便后续连接时进行验证。当你再次尝试连接时，客户端会比对远程主机的公钥与”known_hosts”文件中保存的公钥是否匹配，以确保连接的安全性。</p>
-<p>当远程主机的公钥发生变化时，比如操作系统重新安装、SSH服务重新配置或者网络攻击等情况，客户端会检测到公钥不匹配的情况，从而引发”Remote Host Identification Has Changed”错误。</p>
-<p>这个错误提示你远程主机的身份信息已经改变，可能存在安全风险。为了解决这个问题，你可以采取以下步骤之一：</p>
+        <ol>
+<li><p>架构图</p>
+<h3 id="《应用架构图》"><a href="#《应用架构图》" class="headerlink" title="《应用架构图》"></a>《应用架构图》</h3><p><img src="https://wechigroup.feishu.cn/space/api/box/stream/download/asynccode/?code=M2IyOWQ3Y2ZhYWFkYmI5OWQ3MThjZmI3Y2FkODhiZThfRHRsUGFFTnhpd1lUMnJKYnF4MVZSeXJXeTZFMlo1MlhfVG9rZW46RXVaRmJ4M3hSb09QSFp4RUlPSmNMU3dWbkRiXzE3MDY1MTAyMzQ6MTcwNjUxMzgzNF9WNA" alt="img"></p>
+<p>应用采用三层架构（Web层、Server层、Data层），用户通过Route 53托管的域名CNAME记录访问ALB，ALB将请求转发至Web APP（前端），Web APP发起请求到内部ALB，ALB将请求转发至Server APP（后端），Server APP调用数据库</p>
 <ol>
-<li><p>更新”known_hosts”文件：如果你确定远程主机的身份信息确实发生了合理的变化（例如，你知道主机已经进行了重装或配置更改），可以手动更新”known_hosts”文件，删除对应远程主机的旧记录。下次连接时，客户端将会接受并保存新的公钥。</p>
-</li>
-<li><p>谨慎连接：如果你不确定远程主机的身份信息发生了何种变化，特别是在没有明确的原因或未知的网络状况下，建议谨慎连接。你可以联系远程主机的管理员或负责人，核实身份信息的变化，并确保连接的安全性。</p>
-</li>
+<li>应用负载均衡器 ：面向Internet的ALB 用于分发流量到多个前端应用程序实例，面向内部的ALB供前端应用访问，转发流量至多个后端应用程序实例。</li>
+<li>前端应用程序实例：前端应用程序实例负责处理用户请求，并返回响应数据。通过Auto Scaling组弹性伸缩实例的数量。通过创建CloudWatch警报，触发对Auto Scaling组的扩缩容</li>
+<li>后端应用程序实例：后端应用程序实例负责处理复杂的业务逻辑，如数据库访问等。并通过Auto Scaling组弹性伸缩实例的数量。通过创建CloudWatch警报，触发对Auto Scaling组的扩缩容</li>
+<li>数据库：数据库用于存储网站的数据，如用户信息、小说链接地址等。</li>
+<li>S3存储桶：用来保存小说的对象存储，提供小说访问的链接地址。</li>
+<li>Amazon CloudWatch：设置对应的告警来监控实例和RDS的CPU，内存指标，并通过阈值触发Auto Scaling组。</li>
+<li>Amazon CloudTrail：Amazon CloudTrail提供了对AWS账户中发生的API活动的全面审计记录。它记录了对AWS服务的管理操作、资源更改和API调用的详细信息，包括谁执行了操作、何时执行的以及执行的确切操作。这为企业提供了强大的安全审计功能，可以帮助满足合规性要求，并提供对账户活动的可追溯性。</li>
+<li>Amazon Route 53：用来托管域名，创建映射到ALB的CNAME记录。</li>
 </ol>
-<p>需要注意的是，更新”known_hosts”文件或继续连接之前，请确保确认远程主机的身份信息是可信的，以保护你的连接安全。</p>
-<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ol>
-<li>SSH 原理和基本应用：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/241341815">https://zhuanlan.zhihu.com/p/241341815</a></li>
+<h3 id="《网络架构图》"><a href="#《网络架构图》" class="headerlink" title="《网络架构图》"></a>《网络架构图》</h3><p><img src="https://wechigroup.feishu.cn/space/api/box/stream/download/asynccode/?code=Yjg3NjUxMmZjMWMwNzYwZWYwZGRhZDk2NThiYzE4ZmNfcmg4bGpUN2k0T1c0VkRjSkNraGtFVTVCQzVoYzFHRkpfVG9rZW46QUJIZmI1Rksxb09ybkp4TlBRcWNGbW5SbkpnXzE3MDY1MTAyMzQ6MTcwNjUxMzgzNF9WNA" alt="img"></p>
+<ol>
+<li>VPC的CIDR范围为10.0.0.0&#x2F;16，其中共有8个子网，其中两个公有子网CIDR分别为10.0.0.0&#x2F;20、10.0.16.0&#x2F;20，六个私有子网CIDR分别为10.0.32.0&#x2F;20、10.0.48.0&#x2F;20、10.0.64.0&#x2F;20、10.0.80.0&#x2F;20、10.0.96.0&#x2F;20、10.0.112.0&#x2F;20</li>
+<li>采用多可用区域（Multi-AZ）设计：将资源部署在多个可用区域中，以实现高可用性和容错性。这样可以确保即使一个可用区域发生故障，网络仍然可用。使用Amazon Virtual Private Cloud（VPC）跨多个可用区域划分子网，并在每个可用区域中部署资源。</li>
+<li>配置网络访问控制列表（Network ACL）和安全组：网络ACL用于控制子网级别的入站和出站流量，安全组用于控制实例级别的入站和出站流量。根据实际需要，设置适当的规则来允许必要的流量，并拒绝不必要的流量。</li>
+<li>通过将私有子网关联到另一个路由表，并配置该路由表的默认路由指向NAT Gateway，使私有子网中的实例能够访问互联网。当私有子网中的实例发送流量时，流量将被路由到NAT Gateway，然后再由NAT Gateway转发到互联网。这样，私有子网中的实例就可以通过NAT Gateway与互联网进行通信。</li>
+<li>通过将公有子网关联到一个特定的路由表，并配置该路由表的默认路由指向Internet Gateway（IGW），使公有子网中的实例能够访问互联网。这样，所有从公有子网发出的流量都将通过IGW进行路由，从而实现与公共互联网的连接。</li>
+</ol>
+<h3 id="《RDS-for-MySQL架构图》"><a href="#《RDS-for-MySQL架构图》" class="headerlink" title="《RDS for MySQL架构图》"></a>《RDS for MySQL架构图》</h3><p><img src="https://wechigroup.feishu.cn/space/api/box/stream/download/asynccode/?code=ZmNkOThlYTE1YTVkNTdjYmE4ZGIyODEwYmIwZWRkYzNfVDIyTXNMbG1GY2lLOEhpYjZ6SnBGMnV3QmFtQ014ZXFfVG9rZW46U2hHT2JCcElsb3lkZ3l4a29yNGM3em1obndjXzE3MDY1MTAyMzQ6MTcwNjUxMzgzNF9WNA" alt="img"></p>
+<ol>
+<li>RDS选用MySQL引擎，带一个备用实例的 Amazon RDS 多可用区<strong>，</strong>以提供备份和容灾能力。AWS会自动在主实例和备用实例之间进行同步复制。在主实例发生故障时，系统会自动将流量切换到备用实例，确保高可用性。并在不同可用区创建只读副本进行读写分离，在高峰时减轻主实例的读压力。</li>
+<li>对客户业务进行了解后，我们建议初始容量选择1T，并在需要时可以进行扩容。预计数据库每年的增长率为5%，高峰期的请求并发量约为10000。</li>
+<li>在配置方面，我们建议使用创建事件规则来触发特定条件下的操作，例如当数据库发生故障或性能指标超过阈值时发送警报。您可以选择监控数据库的关键指标，如CPU利用率、内存使用和磁盘空间，并启用增强监控以获取更详细的指标数据。同时，可以创建CloudWatch警报，根据需要设置相应的警报阈值，以便在达到或超过阈值时通过SNS发送通知。</li>
+<li>对于备份策略，AWS Backup可以创建一个备份计划，每周将数据库备份一次到指定的存储桶中。这将确保数据库的定期备份以提供数据保护。可以根据业务需求和合规性要求对备份频率和保留期限进行调整。</li>
+</ol>
+</li>
 </ol>
 
     </div>
@@ -279,10 +261,6 @@
     
 
       <footer class="post-footer">
-          <div class="post-tags">
-              <a href="/tags/Linux/" rel="tag"># Linux</a>
-              <a href="/tags/SSH/" rel="tag"># SSH</a>
-          </div>
 
         
 
@@ -290,13 +268,10 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2024/01/12/kubez-ansible%E5%AE%89%E8%A3%85%E8%84%9A%E6%9C%AC%E5%88%86%E6%9E%90/" rel="prev" title="kubez-ansible shell脚本分析">
-      <i class="fa fa-chevron-left"></i> kubez-ansible shell脚本分析
+    <a href="/2024/01/19/ssh/" rel="prev" title="ssh连接错误剖析">
+      <i class="fa fa-chevron-left"></i> ssh连接错误剖析
     </a></div>
-      <div class="post-nav-item">
-    <a href="/2024/01/29/%E5%AE%A2%E6%88%B7%E6%A1%88%E4%BE%8B/" rel="next" title="">
-       <i class="fa fa-chevron-right"></i>
-    </a></div>
+      <div class="post-nav-item"></div>
     </div>
       </footer>
     
@@ -356,7 +331,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%83%8C%E6%99%AF"><span class="nav-text">背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SSH%E5%8E%9F%E7%90%86"><span class="nav-text">SSH原理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%86%E7%A0%81%E8%AE%A4%E8%AF%81"><span class="nav-text">密码认证</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%86%E9%92%A5%E8%AE%A4%E8%AF%81"><span class="nav-text">密钥认证</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-text">参考</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E3%80%8A%E5%BA%94%E7%94%A8%E6%9E%B6%E6%9E%84%E5%9B%BE%E3%80%8B"><span class="nav-text">《应用架构图》</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E3%80%8A%E7%BD%91%E7%BB%9C%E6%9E%B6%E6%9E%84%E5%9B%BE%E3%80%8B"><span class="nav-text">《网络架构图》</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E3%80%8ARDS-for-MySQL%E6%9E%B6%E6%9E%84%E5%9B%BE%E3%80%8B"><span class="nav-text">《RDS for MySQL架构图》</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -497,7 +472,7 @@ NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
       repo        : 'jianglei-w.github.io',
       owner       : 'jianglei-w',
       admin       : ['jianglei-w'],
-      id          : '9b4a2330a39e58a307140d2423f9af7d',
+      id          : 'c107040e99b26f517bb676d5312a0243',
         language: 'zh-CN',
       distractionFreeMode: true
     });
